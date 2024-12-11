@@ -1,0 +1,58 @@
+﻿@model Productos
+
+@{
+    ViewBag.Title = "Editar Producto";
+}
+
+<h2>Editar Producto</h2>
+<p>@Model.categoria.id_categoria</p>
+
+@using (Html.BeginForm("EditProducto", "Productos", FormMethod.Post))
+{
+    @Html.HiddenFor(model => model.id_producto)
+
+    <div class="form-group">
+        <label for="nombre_producto">Nombre del Producto</label>
+        @Html.TextBoxFor(model => model.nombre_producto, new { @class = "form-control", @placeholder = "Nombre del Producto" })
+        @Html.ValidationMessageFor(model => model.nombre_producto, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="detalles">Detalles</label>
+        @Html.TextAreaFor(model => model.detalles, new { @class = "form-control", @placeholder = "Detalles del Producto" })
+        @Html.ValidationMessageFor(model => model.detalles, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="stock">Stock</label>
+        @Html.TextBoxFor(model => model.stock, new { @class = "form-control", type = "number", @placeholder = "Stock disponible" })
+        @Html.ValidationMessageFor(model => model.stock, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="precio">Precio</label>
+        @Html.TextBoxFor(model => model.precio, new { @class = "form-control", type = "number", step = "0.01", @placeholder = "Precio" })
+        @Html.ValidationMessageFor(model => model.precio, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="id_categoria">Categoría</label>
+        @Html.DropDownListFor(model => model.categoria.id_categoria,
+                (SelectList)ViewBag.categorias,
+                "Seleccione una categoría",
+                new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.categoria.id_categoria, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="estado">Estado</label>
+        @Html.DropDownListFor(model => model.estado, new SelectList(new[] {
+    new { Value = 1, Text = "Activo" },
+    new { Value = 0, Text = "Agotado" }
+    }, "Value", "Text", Model.estado), new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.estado, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    <a href="@Url.Action("ListadoProductos", "Productos")" class="btn btn-secondary">Cancelar</a>
+}

@@ -1,0 +1,71 @@
+﻿@model PryVidaFarma.Models.Productos
+
+@{
+    ViewData["Title"] = "CreateProductos";
+}
+
+<h1>CreateProductos</h1>
+
+<h4>Productos</h4>
+<hr />
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["mensaje"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateProductos" asp-controller="Productos" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="nombre_producto" class="control-label"></label>
+                <input asp-for="nombre_producto" class="form-control" />
+                <span asp-validation-for="nombre_producto" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="detalles" class="control-label"></label>
+                <input asp-for="detalles" class="form-control" />
+                <span asp-validation-for="detalles" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="stock" class="control-label"></label>
+                <input asp-for="stock" class="form-control" min="1" />
+                <span asp-validation-for="stock" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="precio" class="control-label"></label>
+                <input asp-for="precio" class="form-control" />
+                <span asp-validation-for="precio" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="categoria.id_categoria" class="control-label"> Categorias</label>
+                <select asp-for="categoria.id_categoria" class="form-control" asp-items="ViewBag.categorias">
+                    <option value="">Seleccione una categoría</option>
+                </select>
+                <span asp-validation-for="categoria.id_categoria" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="imagen" class="custom-file-label">Imagen</label>
+                <input asp-for="imagen" class="custom-file-input" type="file" id="imagen"/>
+            </div>
+
+            <img class="rounded float-left" hidden id="imgSelect" alt="Imagen seleccionada" width="300px"/>
+
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Registrar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

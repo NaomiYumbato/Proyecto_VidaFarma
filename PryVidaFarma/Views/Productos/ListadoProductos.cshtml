@@ -1,0 +1,93 @@
+﻿@model IEnumerable<PryVidaFarma.Models.Productos>
+
+@{
+    ViewData["Title"] = "ListadoProductos";
+}
+
+<h1>ListadoProductos</h1>
+
+<p>
+    <a asp-action="CreateProductos">Create New</a>
+</p>
+
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["mensaje"]
+    </div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.id_producto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.nombre_producto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.detalles)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.stock)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.precio)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.categoria.nombre_categoria)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.imagen)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.estado)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.id_producto)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.nombre_producto)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.detalles)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.stock)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.precio)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.categoria.nombre_categoria)
+                </td>
+                <td>
+                    <img src="@item.imagen" alt="Imagen del producto" style="width: 100px; height: auto;" />
+                </td>
+                <td>
+                    @(item.estado == 1 ? "Activo" : "Agotado")
+                </td>
+                <td>
+                    <a href="@Url.Action("EditProducto", "Productos", new { id = item.id_producto })">Editar</a>
+                    |
+                    @Html.ActionLink("Eliminar", "DeleteProducto", new { id_producto = item.id_producto }, new { @class = "btn btn-danger", onclick = "return confirm('¿Estás seguro de eliminar este producto?')" })
+                </td>
+
+
+            </tr>
+        }
+    </tbody>
+</table>
+@if (TempData["id_producto"] != null)
+{
+    <div>Producto ID: @TempData["id_producto"]</div>
+}
+
