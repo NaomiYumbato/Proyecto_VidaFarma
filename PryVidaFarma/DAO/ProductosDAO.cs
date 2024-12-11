@@ -36,7 +36,7 @@ namespace PryVidaFarma.DAO
                             nombre_categoria = dr.GetString(5)
                         },
                         imagen = dr.GetString(6),
-                        estado = dr.GetInt32(7) 
+                        estado = dr.GetInt32(7)
 
                     });
             }

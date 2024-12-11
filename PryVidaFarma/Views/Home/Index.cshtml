@@ -1,8 +1,55 @@
-﻿@{
+﻿@model IEnumerable<PryVidaFarma.Models.Categorias>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div>
+    <div class="d-flex w-100 justify-content-between">
+
+        <div class="d-flex px-4 align-items-center">
+            <p class="pl-54px text-24">
+                ¡Bienvenidos a VidaFarma! <br />
+                📦 Ofertas Exclusivas en Medicamentos y Productos de Salud. <br />
+                💊 Cuidamos de ti y tu familia, siempre cerca de tu bienestar.<br />
+                🚚 Envíos rápidos y gratuitos en compras mayores a S/50.<br />
+                🛒 Visítanos o compra online: ¡Fácil, rápido y seguro!<br />
+                👩‍⚕️ Asesoría personalizada de nuestros especialistas.<br />
+            </p>
+        </div>
+        <div class="d-flex pr-180px">
+            <img class="" src="~/img/banner-dc.png" />
+        </div>
+    </div>
+    <div class="d-flex bg-militar-green justify-content-between align-items-center py-principal px-principal ">
+        <div>
+            <a class="d-block text-light display-1 fw-bold lh-1" href="#">Pfizer</a>
+        </div>
+        <div>
+            <a class="d-block text-light display-1 fw-bold lh-1" href="#">Abbvie</a>
+        </div>
+        <div>
+            <a class="d-block text-light display-1 fw-bold lh-1" href="#">Bristol</a>
+        </div>
+        <div>
+            <a class="d-block text-light display-1 fw-bold lh-1" href="#">Astrazeneca</a>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="card bg-pearl-gray p-4">
+            <h3 class="text-center text-capitalize display-4 font-italic">Categorias</h3>
+            <div class="d-flex flex-wrap justify-content-between font-weight-bold border-bottom pb-2 mb-2">
+                @foreach (var item in Model)
+                {
+                    <div class="d-flex flex-column border-bottom py-2">
+                        <a class="d-block" href="#">
+                            <img class="w-100 img-fluid" src="~/img/categoria@($"{item.id_categoria}.png")" alt="@item.nombre_categoria" />
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
 </div>

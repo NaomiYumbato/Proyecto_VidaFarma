@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - PryVidaFarma</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/style.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PryVidaFarma.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="bg-pearl-gray">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -20,31 +21,88 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Productos" asp-action="ListadoProductos">Productos</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="ListarProductos">ListarProductos</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="mb-5">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
+    <br />
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - PryVidaFarma - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+
+    <footer class="border-top footer mt-auto bg-dark text-light mt-5 px-5 pt-5">
+        <div class="d-flex flex-column gap-3 justify-content-between">
+            <div class="d-flex justify-content-around">
+                <div>
+                    <img src="~/img/logo-footer.png" />
+                </div>
+                <div>
+                    <p class="text-24">
+                        💊 Cuida tu salud con nosotros 🌿 <br />
+                        Encuentra medicamentos, vitaminas <br />
+                        y suplementos al mejor precio. <br />
+                        ¡Tu bienestar es nuestra prioridad!🌟 🏥
+                    </p>
+                </div>
+                <div>
+                    <ul>
+                        <li class="list-unstyled"><strong>CONTACTANOS</strong></li>
+                        <li class="list-unstyled">Av. Siempre Viva #742</li>
+                        <li class="list-unstyled">contactoVidaFarma@gmail.com</li>
+                        <li class="list-unstyled">999-888-777</li>
+                    </ul>
+                </div>
+                <div>
+                    <img src="~/img/libro-reclamaciones.png" />
+                </div>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-around align-items-center">
+                <div>
+                    <p class="mb-0">VidaFarma.co © 2024, Todos los derechos reservados</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <img class="img-fluid" src="~/img/visa.svg" alt="Visa" />
+                    <img class="img-fluid" src="~/img/master-card.svg" alt="MasterCard" />
+                    <img class="img-fluid" src="~/img/paypal.svg" alt="PayPal" />
+                    <img class="img-fluid" src="~/img/apple-pay.svg" alt="Apple Pay" />
+                    <img class="img-fluid" src="~/img/g-pay.svg" alt="Google Pay" />
+                </div>
+            </div>
+
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/Imagen.js"></script>
-	<script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

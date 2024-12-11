@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PryVidaFarma.DAO;
 using PryVidaFarma.Models;
 using System.Diagnostics;
 
@@ -8,14 +9,24 @@ namespace PryVidaFarma.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly CategoriasDAO categoriasDAO;
+
+        public HomeController(ILogger<HomeController> logger, CategoriasDAO _categoriasDAO)
         {
             _logger = logger;
+            categoriasDAO = _categoriasDAO;
+        }
+
+        public IActionResult lstCategorias()
+        {
+            var lstCategorias = categoriasDAO.ListadoCategorias();
+            return View(lstCategorias);
         }
 
         public IActionResult Index()
         {
-            return View();
+            var lstCategorias = categoriasDAO.ListadoCategorias();
+            return View(lstCategorias);
         }
 
         public IActionResult Privacy()
