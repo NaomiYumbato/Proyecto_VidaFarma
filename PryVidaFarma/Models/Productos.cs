@@ -1,6 +1,8 @@
-﻿namespace PryVidaFarma.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace PryVidaFarma.Models
 {
-    
+    [Table("tb_productos")]
     public class Productos
     {
         public int id_producto { get; set; }

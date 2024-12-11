@@ -1,0 +1,31 @@
+﻿@model IEnumerable<PryVidaFarma.Models.Productos>
+
+@{
+    ViewData["Title"] = "ListadoProductosPorPalabra";
+}
+
+<h1>ListadoProductosPorPalabra</h1>
+
+<p>
+    <a asp-action="CreateProductos">Create New</a>
+</p>
+
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["mensaje"]
+    </div>
+}
+<!-- Formulario para buscar por palabra clave -->
+<form asp-action="ListadoProductosPorPalabra" method="post">
+    <div class="form-group">
+        <label for="palabra_clave">Buscar por Producto</label>
+        <input type="text" name="palabra_clave" id="palabra_clave" class="form-control" placeholder="Buscar por palabra clave" />
+    </div>
+    <button type="submit" class="btn btn-primary">Buscar</button>
+</form>
+
+<br />
+
+<!-- Listado de productos -->
+@Html.Partial("_ListadoProductos", Model)

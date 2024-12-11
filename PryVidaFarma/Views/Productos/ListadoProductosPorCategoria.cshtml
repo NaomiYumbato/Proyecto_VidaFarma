@@ -1,0 +1,30 @@
+﻿@model IEnumerable<PryVidaFarma.Models.Productos>
+
+@{
+    ViewData["Title"] = "ListadoProductosPorCategoria";
+}
+
+<h1>ListadoProductosPorCategoria</h1>
+
+<p>
+    <a asp-action="CreateProductos">Create New</a>
+</p>
+
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["mensaje"]
+    </div>
+}
+<!-- Formulario para filtrar por categoría -->
+<form asp-action="ListadoProductosPorCategoria" method="post">
+    <div class="form-group">
+        <label for="id_categoria">Filtrar por Categoría</label>
+        @Html.DropDownList("id_categoria", (SelectList)ViewBag.Categorias, "Seleccione una categoría", new { @class = "form-control" })
+    </div>
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+</form>
+<br />
+
+<!-- Listado de productos -->
+@Html.Partial("_ListadoProductos", Model)

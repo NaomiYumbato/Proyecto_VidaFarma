@@ -66,8 +66,10 @@ namespace PryVidaFarma.DAO
             catch (Exception ex)
             {
                 mensaje = $"Ocurrió un error al registrar el producto: {ex.Message}";
+                mensaje += $"Parametros: {obj.id_producto}, {obj.nombre_producto}, {obj.imagen}";
                 return mensaje;
             }
+
         }
 
         public string EliminarProducto(int id_producto)
@@ -85,5 +87,62 @@ namespace PryVidaFarma.DAO
             return mensaje;
         }
 
+        public List<Productos> ListadoProductosPorCategoria(int id_categoria)
+        {
+            var lista = new List<Productos>();
+
+            using (var dr = SqlHelper.ExecuteReader(cad_cn, "sp_BuscarProductosPorCategoria", id_categoria))
+            {
+                while (dr.Read())
+                {
+                    lista.Add(
+                    new Productos()
+                    {
+                        id_producto = dr.GetInt32(0),
+                        nombre_producto = dr.GetString(1),
+                        detalles = dr.GetString(2),
+                        stock = dr.GetInt32(3),
+                        precio = dr.GetDecimal(4),
+                        categoria = new Categorias()
+                        {
+                            nombre_categoria = dr.GetString(5)
+                        },
+                        imagen = dr.GetString(6),
+                        estado = dr.GetInt32(7)
+
+                    });
+                }
+            }
+
+            return lista;
+        }
+
+        public List<Productos> ListadoProductosPorPalabra(string palabra_clave)
+        {
+            var lista = new List<Productos>();
+
+            using (var dr = SqlHelper.ExecuteReader(cad_cn, "sp_BuscarProductoPorPalabra", palabra_clave))
+            {
+                while (dr.Read())
+                {
+                    lista.Add(new Productos()
+                    {
+                        id_producto = dr.GetInt32(0),
+                        nombre_producto = dr.GetString(1),
+                        detalles = dr.GetString(2),
+                        stock = dr.GetInt32(3),
+                        precio = dr.GetDecimal(4),
+                        categoria = new Categorias()
+                        {
+                            nombre_categoria = dr.GetString(5)
+                        },
+                        imagen = dr.GetString(6),
+                        estado = dr.GetInt32(7)
+                    });
+                }
+            }
+
+            return lista;
+        }
     }
 }
