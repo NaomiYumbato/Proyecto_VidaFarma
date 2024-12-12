@@ -19,7 +19,7 @@ namespace PryVidaFarma.DAO
             var lista = new List<Productos>();
             //
             var dr =
-                SqlHelper.ExecuteReader(cad_cn, "sp_ListarProductos");
+                SqlHelper.ExecuteReader(cad_cn, "usp_ListarProductos");
             //
             while (dr.Read())
             {
@@ -33,7 +33,8 @@ namespace PryVidaFarma.DAO
                         precio = dr.GetDecimal(4),
                         categoria = new Categorias() 
                         {
-                            nombre_categoria = dr.GetString(5)
+                            nombre_categoria = dr.GetString(5),
+                            id_categoria = dr.GetInt32(8)
                         },
                         imagen = dr.GetString(6),
                         estado = dr.GetInt32(7)
@@ -50,7 +51,7 @@ namespace PryVidaFarma.DAO
             string mensaje = $"El Nuevo Producto fue Registrado correctamente";
             try
             {
-                SqlHelper.ExecuteNonQuery(cad_cn, "sp_RegistrarProducto",
+                SqlHelper.ExecuteNonQuery(cad_cn, "usp_RegistrarProducto",
                     obj.id_producto,
                     obj.nombre_producto, obj.detalles,
                     obj.stock, obj.precio, obj.categoria.id_categoria,
@@ -77,7 +78,7 @@ namespace PryVidaFarma.DAO
             string mensaje = "";
             try
             {
-                SqlHelper.ExecuteNonQuery(cad_cn, "sp_EliminarProducto", id_producto);
+                SqlHelper.ExecuteNonQuery(cad_cn, "usp_EliminarProducto", id_producto);
                 mensaje = $"Se ha eliminado el Producto con ID: {id_producto}";
             }
             catch (Exception ex)
@@ -91,7 +92,7 @@ namespace PryVidaFarma.DAO
         {
             var lista = new List<Productos>();
 
-            using (var dr = SqlHelper.ExecuteReader(cad_cn, "sp_BuscarProductosPorCategoria", id_categoria))
+            using (var dr = SqlHelper.ExecuteReader(cad_cn, "usp_BuscarProductosPorCategoria", id_categoria))
             {
                 while (dr.Read())
                 {
@@ -121,7 +122,7 @@ namespace PryVidaFarma.DAO
         {
             var lista = new List<Productos>();
 
-            using (var dr = SqlHelper.ExecuteReader(cad_cn, "sp_BuscarProductoPorPalabra", palabra_clave))
+            using (var dr = SqlHelper.ExecuteReader(cad_cn, "usp_BuscarProductoPorPalabra", palabra_clave))
             {
                 while (dr.Read())
                 {
