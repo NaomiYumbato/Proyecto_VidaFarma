@@ -6,9 +6,15 @@
 
 <h2>Editar Producto</h2>
 <p>@Model.categoria.id_categoria</p>
-
-@using (Html.BeginForm("EditProducto", "Productos", FormMethod.Post))
+<p>@Model.imagen</p>
+@if (TempData["mensaje"] != null)
 {
+    <div class="alert alert-success">
+        @TempData["mensaje"]
+    </div>
+}
+
+<form asp-action="EditProducto" asp-controller="Productos" enctype="multipart/form-data">
     @Html.HiddenFor(model => model.id_producto)
 
     <div class="form-group">
@@ -45,6 +51,22 @@
     </div>
 
     <div class="form-group">
+        <label asp-for="imagen" class="custom-file-label">Imagen</label>
+        <input asp-for="imagen" class="custom-file-input" type="file" id="imagen" />
+
+        @if (!string.IsNullOrEmpty(Model.imagen))
+        {
+            <div>
+                <p>Imagen actual:</p>
+                <img id="imgSelect" src="@Model.imagen" alt="Imagen del producto" width="100" height="100" />
+                <input type="hidden" asp-for="imagen" value="@Model.imagen" id="imagenActual" />
+            </div>
+        }
+
+        <img id="imgPreview" src="" alt="Imagen seleccionada" style="display:none;" width="100" height="100" />
+    </div>
+
+    <div class="form-group">
         <label for="estado">Estado</label>
         @Html.DropDownListFor(model => model.estado, new SelectList(new[] {
     new { Value = 1, Text = "Activo" },
@@ -55,4 +77,5 @@
 
     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
     <a href="@Url.Action("ListadoProductos", "Productos")" class="btn btn-secondary">Cancelar</a>
-}
+    </form>
+

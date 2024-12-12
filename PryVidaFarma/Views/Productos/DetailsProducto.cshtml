@@ -1,0 +1,65 @@
+﻿@model PryVidaFarma.Models.Productos
+
+@{
+    ViewData["Title"] = "DetailsProducto";
+}
+
+<h1>DetailsProducto</h1>
+
+<div>
+    <h4>Productos</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.id_producto)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.id_producto)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.nombre_producto)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.nombre_producto)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.detalles)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.detalles)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.stock)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.stock)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.precio)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.precio)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.imagen)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.imagen)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.estado)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.estado)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.categoria)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.categoria.nombre_categoria)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="ListadoProductos">Back to List</a>
+</div>
