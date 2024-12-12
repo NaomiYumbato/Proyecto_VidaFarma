@@ -14,7 +14,7 @@ namespace PryVidaFarma.DAO
         public List<Categorias> ListadoCategorias()
         {
             var lista = new List<Categorias>();
-            var dr = SqlHelper.ExecuteReader(cad_cn, "sp_ListarCategorias");
+            var dr = SqlHelper.ExecuteReader(cad_cn, "usp_ListarCategorias");
             while (dr.Read())
             {
                 lista.Add(

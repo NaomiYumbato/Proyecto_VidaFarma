@@ -1,31 +1,16 @@
-﻿@model IEnumerable<PryVidaFarma.Models.Productos>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Detalles</th>
-            <th>Stock</th>
-            <th>Precio</th>
-            <td></td>
-            <th>Categoría</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var producto in Model)
-        {
-            <tr>
-                <td>@producto.nombre_producto</td>
-                <td>@producto.detalles</td>
-                <td>@producto.stock</td>
-                <td>@producto.precio</td>
-                <td>
-                    <img src="@producto.imagen" width="100px" alt="Imagen del producto"/>
-                </td>
-                <td>@producto.categoria.nombre_categoria</td>
-                <td>@(producto.estado == 1 ? "Activo" : "Inactivo")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+﻿<div class="d-flex flex-wrap p-2 p-md-0">
+    @foreach (var producto in Model)
+    {
+        <div class="card m-2 flex-grow-1">
+            <img src="@producto.imagen" class="card-img-top" alt="Imagen del producto">
+            <div class="card-body w-100">
+                <h5 class="card-title">@producto.nombre_producto</h5>
+                <p class="card-text">@producto.detalles</p>
+                <p class="card-text">Stock: @producto.stock</p>
+                <p class="card-text">Precio: @producto.precio</p>
+                <p class="card-text">Categoría: @producto.categoria.nombre_categoria</p>
+                <p class="card-text">Estado: @(producto.estado == 1 ? "Activo" : "Inactivo")</p>
+            </div>
+        </div>
+    }
+</div>
