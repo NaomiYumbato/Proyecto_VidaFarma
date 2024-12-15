@@ -38,12 +38,12 @@
 
     <div class="container mt-5">
         <div class="card bg-pearl-gray p-4">
-            <h3 class="text-center text-capitalize display-4 font-italic">Categorias</h3>
-            <div class="d-flex flex-wrap justify-content-between font-weight-bold border-bottom pb-2 mb-2">
+            <h3 class="text-center text-capitalize display-4 font-italic mb-2">Categorias</h3>
+            <div class="d-flex flex-wrap justify-content-evenly font-weight-bold border-bottom pb-2 mb-2">
                 @foreach (var item in Model)
                 {
                     <div class="d-flex flex-column border-bottom py-2">
-                        <a class="d-block" href="#">
+                        <a class="d-block text-light display-1 fw-bold lh-1" href="@Url.Action("ListadoProductosPorCategoria", "Productos", new { categoriaId = item.id_categoria })">
                             <img class="w-100 img-fluid" src="~/img/categoria@($"{item.id_categoria}.png")" alt="@item.nombre_categoria" />
                         </a>
                     </div>

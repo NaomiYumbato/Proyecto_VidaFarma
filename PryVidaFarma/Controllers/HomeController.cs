@@ -22,7 +22,7 @@ namespace PryVidaFarma.Controllers
             var lstCategorias = categoriasDAO.ListadoCategorias();
             return View(lstCategorias);
         }
-
+        
         public IActionResult Index()
         {
             var lstCategorias = categoriasDAO.ListadoCategorias();

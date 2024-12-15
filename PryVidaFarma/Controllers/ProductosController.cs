@@ -115,8 +115,8 @@ namespace PryVidaFarma.Controllers
 
             ViewBag.categorias = new SelectList(
                 categoriasDAO.ListadoCategorias(),
-                "id_categoria",       
-                "nombre_categoria",   
+                "id_categoria",
+                "nombre_categoria",
                 categoriaId);
             return View(producto);
         }
@@ -171,7 +171,7 @@ namespace PryVidaFarma.Controllers
         {
             try
             {
-                string resultado = productsDAO.EliminarProducto(id_producto);  
+                string resultado = productsDAO.EliminarProducto(id_producto);
                 TempData["mensaje"] = resultado;
                 return RedirectToAction(nameof(ListadoProductos));
             }
@@ -190,9 +190,12 @@ namespace PryVidaFarma.Controllers
                 "nombre_categoria",
                 categoriaId ?? 0
             );
-            var listado = productsDAO.ListadoProductos();
-            //
-            return View(listado);
+            var listado = productsDAO.ListadoProductos().Where(producto => producto.categoria.id_categoria == categoriaId) ?? productsDAO.ListadoProductos();
+            if (listado.Count() <= 0)
+            {
+                TempData["mensaje"] = "No hay productos en la categoria seleccionada";
+            }
+                return View(listado);
         }
 
         [HttpPost]
@@ -204,7 +207,7 @@ namespace PryVidaFarma.Controllers
                 ViewBag.Categorias = new SelectList(categoriasDAO.ListadoCategorias(), "id_categoria", "nombre_categoria", id_categoria);
                 return View("ListadoProductosPorCategoria", productos);
             }
-            else 
+            else
             {
                 TempData["mensaje"] = "No hay productos en la categoria seleccionada";
                 return RedirectToAction(nameof(ListadoProductosPorCategoria));
