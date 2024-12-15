@@ -1,0 +1,71 @@
+﻿@model List<PryVidaFarma.Models.CarritoCompra>
+
+@{
+    ViewData["Title"] = "Ver Carrito";
+}
+
+<h1>Carrito de Compras</h1>
+
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-warning">
+        <h4><strong>@TempData["mensaje"]</strong></h4>
+    </div>
+}
+
+<p>
+    <a asp-action="Index" class="btn btn-info">
+        Seguir Comprando
+    </a>
+    @if (Model != null && Model.Count > 0)
+    {
+        <a asp-action="SeleccionarTipoPago" asp-route-idCliente="@Model.FirstOrDefault()?.IdCliente"
+           class="btn btn-primary">
+            Pagar
+        </a>
+    }
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Importe</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Count > 0)
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.NombreProducto</td>
+                    <td>@item.Cantidad</td>
+                    <td>@item.Precio.ToString("C")</td>
+                    <td>@item.ImporteTotal.ToString("C")</td>
+                    <td>
+                        @Html.ActionLink("Eliminar", "EliminarArticulo",
+                                 new { idCarritoCompra = item.IdCarritoCompra, idCliente = item.IdCliente, idProducto = item.IdProducto },
+                                 new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">No hay productos en el carrito.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (ViewBag.total != null && ViewBag.total > 0)
+{
+    <div class="alert alert-info text-end">
+        <h4>Total a Pagar: <strong>@ViewBag.total.ToString("C")</strong></h4>
+    </div>
+}
