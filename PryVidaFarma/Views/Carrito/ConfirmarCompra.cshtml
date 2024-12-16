@@ -1,0 +1,48 @@
+﻿@model List<PryVidaFarma.Models.DetalleCompra>
+
+@{
+    ViewBag.Title = "Detalle de Compra";
+}
+
+<h2>Detalle de la Compra</h2>
+
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-success">
+        <strong>@TempData["mensaje"]</strong>
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Importe Total</th>
+            <th>Tipo de Pago</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.NombreProducto</td>
+                <td>@item.Cantidad</td>
+                <td>@item.Precio.ToString("C")</td>
+                <td>@item.ImporteTotal.ToString("C")</td>
+                <td>@item.TipoPago</td>
+                <td>@item.FechaCompra.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="alert alert-info">
+    <h4>Total General: <strong>@Model.Sum(d => d.ImporteTotal).ToString("C")</strong></h4>
+</div>
+
+<p>
+    <a asp-action="IndexProductos" class="btn btn-primary">Regresar al Inicio</a>
+</p>

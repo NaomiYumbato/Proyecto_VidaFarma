@@ -109,5 +109,56 @@ namespace PryVidaFarma.Controllers
             TempData["mensaje"] = "Producto eliminado del carrito.";
             return RedirectToAction("VerCarrito", new { idCliente });
         }
+
+
+
+        //
+        // Acción para mostrar el formulario de selección de tipo de pago
+        public ActionResult SeleccionarTipoPago(int idCliente)
+        {
+            ViewBag.IdCliente = idCliente;
+
+            // Obtener lista de tipos de pago
+            var tiposPago = carritoDao.ObtenerTiposPago();
+
+            // Obtener el carrito del cliente
+            var carrito = carritoDao.GetCarritoPorCliente(idCliente);
+            ViewBag.Total = carrito.Sum(c => c.ImporteTotal); // Importe total del carrito
+            ViewBag.Carrito = carrito; // Pasar la lista del carrito a la vista
+
+            return View(tiposPago);
+        }
+
+
+
+        [HttpGet]
+        public ActionResult ConfirmarCompra(int idCliente)
+        {
+            // Recuperar los detalles de la compra desde TempData
+            var detalleCompraJson = TempData["DetalleCompra"] as string;
+            if (string.IsNullOrEmpty(detalleCompraJson))
+            {
+                TempData["mensaje"] = "No hay detalles de compra disponibles.";
+                return RedirectToAction("VerCarrito", new { idCliente });
+            }
+
+            var detalleCompra = JsonConvert.DeserializeObject<List<DetalleCompra>>(detalleCompraJson);
+
+            return View("DetalleCompra", detalleCompra);
+        }
+
+        [HttpPost]
+        public ActionResult ConfirmarCompra(int idCliente, int idTipoPago)
+        {
+            // Procesar la compra y obtener el detalle
+            var detalleCompra = carritoDao.ConfirmarCompra(idCliente, idTipoPago);
+            TempData["mensaje"] = "Compra realizada con éxito.";
+
+            // Almacenar el detalle en TempData para redirección
+            TempData["DetalleCompra"] = JsonConvert.SerializeObject(detalleCompra);
+
+            // Redirige a la acción GET ConfirmarCompra para mostrar la vista
+            return RedirectToAction("ConfirmarCompra", new { idCliente });
+        }
     }
 }
