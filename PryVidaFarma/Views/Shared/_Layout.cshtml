@@ -10,7 +10,9 @@
 <body class="bg-pearl-gray">
     <header>
         <div class="d-flex px-5 gap-4 align-items-center">
-            <img src="~/img/logo-header.svg" class="img-fluid" alt="Logo" />
+            <a asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="~/img/logo-header.svg" class="img-fluid" alt="Logo" />
+            </a>
             <select class="form-select flex-shrink-0" style="width: auto;" aria-label="Categorias">
                 <option selected>Categorias</option>
                 <option value="1">categoria 1</option>
@@ -62,7 +64,7 @@
         <main role="main">
             @RenderBody()
         </main>
-    </div>    
+    </div>
 
     <footer class="border-top footer mt-auto bg-dark text-light mt-5 px-5 pt-5">
         <div class="d-flex flex-column gap-3 justify-content-between">

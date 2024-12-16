@@ -195,7 +195,8 @@ namespace PryVidaFarma.Controllers
             {
                 TempData["mensaje"] = "No hay productos en la categoria seleccionada";
             }
-                return View(listado);
+            ViewBag.categoria = categoriasDAO.GetCategoriaById(categoriaId ?? 0)?.nombre_categoria;
+            return View(listado);
         }
 
         [HttpPost]
