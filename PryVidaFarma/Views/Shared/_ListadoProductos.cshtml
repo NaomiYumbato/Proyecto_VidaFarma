@@ -2,7 +2,7 @@
     @foreach (var producto in Model)
     {
         <div class="card m-2 flex-grow-1">
-            <img src="@producto.imagen" class="card-img-top" alt="Imagen del producto">
+            <img width="100px" src="@producto.imagen" class="card-img-top" alt="Imagen del producto">
             <div class="card-body w-100">
                 <h5 class="card-title">@producto.nombre_producto</h5>
                 <p class="card-text">@producto.detalles</p>

@@ -34,10 +34,10 @@ namespace PryVidaFarma.DAO
                         categoria = new Categorias() 
                         {
                             nombre_categoria = dr.GetString(5),
-                            id_categoria = dr.GetInt32(8)
+                            id_categoria = dr.GetInt32(6)
                         },
-                        imagen = dr.GetString(6),
-                        estado = dr.GetInt32(7)
+                        imagen = dr.GetString(7),
+                        estado = dr.GetInt32(8)
 
                     });
             }
