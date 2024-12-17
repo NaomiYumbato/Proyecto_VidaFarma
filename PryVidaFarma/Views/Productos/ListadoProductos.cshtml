@@ -7,7 +7,7 @@
 <h1>ListadoProductos</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="CreateProductos">Create New</a>
 </p>
 <table class="table">
     <thead>
@@ -55,7 +55,7 @@
                 @Html.DisplayFor(modelItem => item.precio)
             </td>
             <td>
-                <img src="@item.imagen"/>
+                <img src="@item.imagen" width="200px"/>
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.estado)
