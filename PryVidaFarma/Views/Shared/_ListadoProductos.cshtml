@@ -2,16 +2,17 @@
     @foreach (var producto in Model)
     {
         <div class="card m-2 flex-grow-1">
-          <a asp-area="" asp-controller="Productos" asp-action="DetailsProducto" asp-route-id="@producto.id_producto">
-              <img width="100px" src="@producto.imagen" class="card-img-top" alt="Imagen del producto">
-              <div class="card-body w-100">
-                  <h5 class="card-title">@producto.nombre_producto</h5>
-                  <p class="card-text">@producto.detalles</p>
-                  <p class="card-text">Stock: @producto.stock</p>
-                  <p class="card-text">Precio: @producto.precio</p>
-                  <p class="card-text">Categoría: @producto.categoria.nombre_categoria</p>
-                  <p class="card-text">Estado: @(producto.estado == 1 ? "Activo" : "Inactivo")</p>
-              </div>
+            <a asp-area="" asp-controller="Productos" asp-action="DetailsProducto" asp-route-id="@producto.id_producto">
+                <img width="100px" src="@producto.imagen" class="card-img-top" alt="Imagen del producto">
+                <div class="card-body w-100">
+                    <h5 class="card-title">@producto.nombre_producto</h5>
+                    <p class="card-text">@producto.detalles</p>
+                    <p class="card-text">Stock: @producto.stock</p>
+                    <p class="card-text">Precio: @producto.precio</p>
+                    <p class="card-text">Categoría: @producto.categoria.nombre_categoria</p>
+                    <p class="card-text">Estado: @(producto.estado == 1 ? "Activo" : "Inactivo")</p>
+                </div>
             </a>
+        </div>
     }
 </div>
