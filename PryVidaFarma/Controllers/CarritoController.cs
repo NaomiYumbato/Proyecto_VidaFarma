@@ -34,8 +34,9 @@ namespace PryVidaFarma.Controllers
         public ActionResult VerCarrito(int? idCliente)
         {
             List<CarritoCompra> listacarrito;
+
             // Cliente logueado
-            if (idCliente.HasValue) 
+            if (idCliente.HasValue)
             {
                 listacarrito = carritoDao.GetCarritoPorCliente(idCliente.Value);
             }
@@ -45,14 +46,45 @@ namespace PryVidaFarma.Controllers
                 listacarrito = ObtenerCarritoDesdeSesion();
             }
 
-            ViewBag.total = listacarrito.Sum(c => c.ImporteTotal);
+            // Obtener nombres de productos
+            foreach (var item in listacarrito)
+            {
+                var producto = carritoDao.ObtenerProductoPorId(item.IdProducto);
+                item.NombreProducto = producto?.nombre_producto ?? "Producto no encontrado";
+            }
+
+            ViewBag.Total = listacarrito.Sum(c => c.ImporteTotal);
             return View(listacarrito);
         }
 
+        //17/12/2024
+        [HttpGet]
+        public ActionResult AgregarAlCarrito(int idProducto)
+        {
+            // Obtener un producto por su ID
+            var producto = carritoDao.ObtenerProductoPorId(idProducto);
+
+            if (producto == null)
+            {
+                TempData["mensaje"] = "Producto no encontrado.";
+                return RedirectToAction("ListadoProductos", "Productos");
+            }
+
+            return View(producto);
+        }
+        //Fin
+
         // Agregar artículo al carrito
+        [HttpPost]
         [HttpPost]
         public ActionResult AgregarAlCarrito(int? idCliente, int idProducto, int cantidad, decimal precio)
         {
+            if (cantidad <= 0 || precio <= 0)
+            {
+                TempData["mensaje"] = "Cantidad o precio no válidos.";
+                return RedirectToAction("ListadoProductos");
+            }
+
             var carritoCompra = new CarritoCompra
             {
                 IdCliente = idCliente ?? 0,
@@ -62,12 +94,10 @@ namespace PryVidaFarma.Controllers
             };
             carritoCompra.CalcularImporte();
 
-            // Cliente logueado
-            if (idCliente.HasValue) 
+            if (idCliente.HasValue)
             {
                 carritoDao.AgregarCarrito(carritoCompra);
             }
-            // Cliente no logueado
             else
             {
                 var carrito = ObtenerCarritoDesdeSesion();
@@ -86,9 +116,10 @@ namespace PryVidaFarma.Controllers
                 GuardarCarritoEnSesion(carrito);
             }
 
-            TempData["mensaje"] = "Producto agregado al carrito correctamente.";
+            TempData["mensaje"] = "Producto agregado correctamente.";
             return RedirectToAction("VerCarrito", new { idCliente });
         }
+
 
         // Eliminar artículo del carrito
         public ActionResult EliminarArticulo(int idCarritoCompra, int? idCliente, int idProducto)
@@ -111,9 +142,9 @@ namespace PryVidaFarma.Controllers
         }
 
 
+        //    
 
-        //
-        // Acción para mostrar el formulario de selección de tipo de pago
+        [HttpGet]
         public ActionResult SeleccionarTipoPago(int idCliente)
         {
             ViewBag.IdCliente = idCliente;
@@ -122,43 +153,70 @@ namespace PryVidaFarma.Controllers
             var tiposPago = carritoDao.ObtenerTiposPago();
 
             // Obtener el carrito del cliente
-            var carrito = carritoDao.GetCarritoPorCliente(idCliente);
-            ViewBag.Total = carrito.Sum(c => c.ImporteTotal); // Importe total del carrito
-            ViewBag.Carrito = carrito; // Pasar la lista del carrito a la vista
+            List<CarritoCompra> listacarrito;
+            if (idCliente > 0)
+            {
+                listacarrito = carritoDao.GetCarritoPorCliente(idCliente);
+            }
+            else
+            {
+                listacarrito = ObtenerCarritoDesdeSesion();
+            }
+            foreach (var item in listacarrito)
+            {
+                var producto = carritoDao.ObtenerProductoPorId(item.IdProducto);
+                item.NombreProducto = producto?.nombre_producto ?? "Producto no encontrado";
+            }
+            // Calcular el importe total del carrito
+            ViewBag.Total = listacarrito.Sum(c => c.ImporteTotal);
+            ViewBag.Carrito = listacarrito;
 
             return View(tiposPago);
         }
 
 
-
         [HttpGet]
-        public ActionResult ConfirmarCompra(int idCliente)
+        public ActionResult DetalleCompra(int idCarritoCompra)
         {
-            // Recuperar los detalles de la compra desde TempData
-            var detalleCompraJson = TempData["DetalleCompra"] as string;
-            if (string.IsNullOrEmpty(detalleCompraJson))
+            // Obtener los detalles de la compra
+            var detalleCompra = carritoDao.ObtenerDetallesCompra(idCarritoCompra);
+            if (detalleCompra == null || !detalleCompra.Any())
             {
                 TempData["mensaje"] = "No hay detalles de compra disponibles.";
-                return RedirectToAction("VerCarrito", new { idCliente });
+                return RedirectToAction("VerCarrito", new { idCarritoCompra });
             }
 
-            var detalleCompra = JsonConvert.DeserializeObject<List<DetalleCompra>>(detalleCompraJson);
-
-            return View("DetalleCompra", detalleCompra);
-        }
-
-        [HttpPost]
-        public ActionResult ConfirmarCompra(int idCliente, int idTipoPago)
-        {
-            // Procesar la compra y obtener el detalle
-            var detalleCompra = carritoDao.ConfirmarCompra(idCliente, idTipoPago);
-            TempData["mensaje"] = "Compra realizada con éxito.";
-
-            // Almacenar el detalle en TempData para redirección
             TempData["DetalleCompra"] = JsonConvert.SerializeObject(detalleCompra);
 
-            // Redirige a la acción GET ConfirmarCompra para mostrar la vista
-            return RedirectToAction("ConfirmarCompra", new { idCliente });
+            return View("DetalleCompra", detalleCompra);
+
         }
+
+
+
+        /* [HttpPost]
+         public ActionResult ConfirmarCompra(int idCarritoCompra, int idProducto, int cantidad, decimal importeTotal, int idTipoPago)
+         {
+             // Obtener el id_cliente de la sesión
+             int? idCliente = Session["id_cliente"] as int?;
+
+             // Verificar si el cliente está logueado
+             if (idCliente == null || idCliente <= 0)
+             {
+                 TempData["mensaje"] = "Debe iniciar sesión para confirmar la compra.";
+                 return RedirectToAction("Login", "Account");  // Redirige al login o donde sea apropiado
+             }
+
+             // Confirmar la compra
+             var mensaje = carritoDao.ConfirmarCompra(idCarritoCompra, idCliente.Value, idProducto, cantidad, importeTotal, idTipoPago);
+             TempData["mensaje"] = mensaje;
+
+             // Redirigir a la acción de detalles de la compra
+             return RedirectToAction("DetalleCompra", new { idCarritoCompra, idTipoPago });
+         }*/
+       
+
+
+
     }
 }

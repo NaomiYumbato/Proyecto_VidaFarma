@@ -75,8 +75,8 @@ namespace PryVidaFarma.DAO
 
             using (var dr = SqlHelper.ExecuteReader(
                 cad_cn,
-                CommandType.Text,
-                "SELECT id_tipo_pago, descripcion FROM tb_tipos_pago"))
+                CommandType.StoredProcedure,
+                "PA_ObtenerTiposPago"))
             {
                 while (dr.Read())
                 {
@@ -91,18 +91,43 @@ namespace PryVidaFarma.DAO
             return lista;
         }
 
-
         //
-        public List<DetalleCompra> ConfirmarCompra(int idCliente, int idTipoPago)
+        public string ConfirmarCompra(int idCarritoCompra, int idCliente, int idProducto, int cantidad, decimal importeTotal, int idTipoPago)
+        {
+            if (idCliente <= 0 || idProducto <= 0 || cantidad <= 0 || importeTotal <= 0 || idTipoPago <= 0)
+                return "Parámetros inválidos para confirmar la compra.";
+
+            try
+            {
+                SqlHelper.ExecuteNonQuery(
+                    cad_cn,
+                    CommandType.StoredProcedure,
+                    "PA_CONFIRMAR_COMPRA",
+                    new SqlParameter("@id_carrito_compra", idCarritoCompra),
+                    new SqlParameter("@id_cliente", idCliente),
+                    new SqlParameter("@id_producto", idProducto),
+                    new SqlParameter("@cantidad", cantidad),
+                    new SqlParameter("@importeTotal", importeTotal),
+                    new SqlParameter("@id_tipo_pago", idTipoPago)
+                );
+
+                return "Compra confirmada exitosamente.";
+            }
+            catch (Exception ex)
+            {
+                return $"Error al confirmar la compra: {ex.Message}";
+            }
+        }
+
+        public List<DetalleCompra> ObtenerDetallesCompra(int idCarritoCompra)
         {
             var lista = new List<DetalleCompra>();
 
             using (var dr = SqlHelper.ExecuteReader(
                 cad_cn,
                 CommandType.StoredProcedure,
-                "PA_CONFIRMAR_COMPRA",
-                new SqlParameter("@id_cliente", idCliente),
-                new SqlParameter("@id_tipo_pago", idTipoPago)))
+                "PA_OBTENER_DETALLES_COMPRA",
+                new SqlParameter("@id_carrito_compra", idCarritoCompra)))
             {
                 while (dr.Read())
                 {
@@ -117,7 +142,38 @@ namespace PryVidaFarma.DAO
                     });
                 }
             }
+
             return lista;
+        }
+
+        //17/12/2024
+        public Productos ObtenerProductoPorId(int idProducto)
+        {
+            Productos producto = null;
+
+            using (var dr = SqlHelper.ExecuteReader(
+                cad_cn,
+                CommandType.StoredProcedure,
+                "PA_ObtenerProductoPorId",
+                new SqlParameter("@id_producto", idProducto)))
+            {
+                if (dr.Read())
+                {
+                    producto = new Productos
+                    {
+                        id_producto = dr.GetInt32(0),
+                        nombre_producto = dr.GetString(1),
+                        detalles = dr.GetString(2),
+                        stock = dr.GetInt32(3),
+                        precio = dr.GetDecimal(4),
+                        categoria = new Categorias { id_categoria = dr.GetInt32(5) },
+                        imagen = dr.GetString(6),
+                        estado = dr.GetInt32(7)
+                    };
+                }
+            }
+
+            return producto;
         }
     }
 }
