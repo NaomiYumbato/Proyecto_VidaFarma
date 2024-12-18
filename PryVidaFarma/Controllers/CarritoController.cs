@@ -74,8 +74,7 @@ namespace PryVidaFarma.Controllers
         }
         //Fin
 
-        // Agregar artículo al carrito
-        [HttpPost]
+        // Agregar artículo al carrito        
         [HttpPost]
         public ActionResult AgregarAlCarrito(int? idCliente, int idProducto, int cantidad, decimal precio)
         {

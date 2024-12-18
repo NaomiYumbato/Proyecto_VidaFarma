@@ -4,68 +4,78 @@
     ViewData["Title"] = "Ver Carrito";
 }
 
-<h1>Carrito de Compras</h1>
+<div class="px-4">
+    <div class="mb-3 px-4">
+        <h1>Carrito de Compras</h1>
 
-@if (TempData["mensaje"] != null)
-{
-    <div class="alert alert-warning">
-        <h4><strong>@TempData["mensaje"]</strong></h4>
-    </div>
-}
-
-<p>
-    <a asp-action="Index" class="btn btn-info">
-        Seguir Comprando
-    </a>
-    @if (Model != null && Model.Count > 0)
-    {
-        <a asp-action="SeleccionarTipoPago" asp-route-idCliente="@Model.FirstOrDefault()?.IdCliente"
-           class="btn btn-primary">
-            Pagar
+        @if (TempData["mensaje"] != null)
+        {
+            <div class="alert alert-warning">
+                <h4><strong>@TempData["mensaje"]</strong></h4>
+            </div>
+        }
+        <a asp-action="Index" class="btn btn-info">
+            Seguir Comprando
         </a>
-    }
-</p>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio Unitario</th>
-            <th>Importe</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Count > 0)
-        {
-            foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.NombreProducto</td>
-                    <td>@item.Cantidad</td>
-                    <td>@item.Precio.ToString("C")</td>
-                    <td>@item.ImporteTotal.ToString("C")</td>
-                    <td>
-                        @Html.ActionLink("Eliminar", "EliminarArticulo",
-                                 new { idProducto = item.IdProducto },
-                                 new { @class = "btn btn-danger btn-sm" })
-                    </td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="5" class="text-center">No hay productos en el carrito.</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-@if (ViewBag.total != null && ViewBag.total > 0)
-{
-    <div class="alert alert-info text-end">
-        <h4>Total a Pagar: <strong>@ViewBag.total.ToString("C")</strong></h4>
     </div>
-}
+</div>
+<div class="card mx-5 px-4">
+    <div class="card-body d-flex justify-content-between gap-5">
+        <div class="card w-100">
+            <div class="card-header text-center">
+                Items del Carrito
+            </div>
+            <div class="card-body d-flex flex-column px-5">
+                @if (Model != null && Model.Count > 0)
+                {
+                    @foreach (var item in Model)
+                    {
+                        <div class="d-flex justify-content-between mb-2 gap-4">
+                            <div>
+                                <div>@item.NombreProducto</div>
+                                <div>Cantidad: @item.Cantidad</div>
+                                <div>Precio Unitario: @item.Precio.ToString("C")</div>
+                                <div>Importe: @item.ImporteTotal.ToString("C")</div>
+                            </div>
+                            <div>
+                                <a asp-action="EliminarArticulo" asp-route-idProducto="@item.IdProducto">
+                                    <img src="~/img/Drop.svg" alt="Eliminar" />
+                                </a>
+                            </div>
+                        </div>
+                        <hr />
+                    }
+                }
+                else
+                {
+                    <p class="text-center">No hay productos en el carrito.</p>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                Resumen de la Compra
+            </div>
+            <div class="card-body d-flex flex-column">
+                @if (ViewBag.total != null && ViewBag.total > 0)
+                {
+                    <div class="alert alert-info">
+                        <h4>Total a Pagar: <br /> <strong>@ViewBag.total.ToString("C")</strong></h4>
+                    </div>
+
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        <a asp-action="SeleccionarTipoPago" asp-route-idCliente="@Model.FirstOrDefault()?.IdCliente" class="w-100 mt-auto">
+                            <img src="~/img/Continuar-pago.svg" alt="Continuar Pago" class="img-fluid" />
+                        </a>
+                    }
+                }
+                else
+                {
+                    <p class="text-center mt-auto">No hay productos en el carrito.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

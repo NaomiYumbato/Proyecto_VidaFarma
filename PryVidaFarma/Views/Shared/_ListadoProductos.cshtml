@@ -1,10 +1,12 @@
 ﻿<div class="d-flex flex-wrap p-2 p-md-0">
     @foreach (var producto in Model)
     {
-        <div class="card m-2 flex-grow-1">
+        <div class="card m-2 p-3">
             <a asp-area="" asp-controller="Productos" asp-action="DetailsProducto" asp-route-id="@producto.id_producto">
-                <img width="100px" src="@producto.imagen" class="card-img-top" alt="Imagen del producto">
-                <div class="card-body w-100">
+                <div class="d-flex justify-content-center">
+                    <img style="width:250px; height:250px; object-fit:cover;" src="@producto.imagen" class="card-img-top img-fluid" alt="Imagen del producto">
+                </div>
+                <div class="card-body w-100 px-4">
                     <h5 class="card-title">@producto.nombre_producto</h5>
                     <p class="card-text">@producto.detalles</p>
                     <p class="card-text">Stock: @producto.stock</p>

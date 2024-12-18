@@ -225,6 +225,12 @@ namespace PryVidaFarma.Controllers
         [HttpPost]
         public IActionResult ListadoProductosPorPalabra(string palabra_clave)
         {
+            if (string.IsNullOrWhiteSpace(palabra_clave))
+            {
+                TempData["mensaje"] = "Debe proporcionar una palabra clave válida.";
+                return RedirectToAction(nameof(ListadoProductosPorPalabra));
+            }
+
             var productos = productsDAO.ListadoProductosPorPalabra(palabra_clave);
             if (productos != null && productos.Any())
             {
@@ -232,7 +238,7 @@ namespace PryVidaFarma.Controllers
             }
             else
             {
-                TempData["mensaje"] = "Producto no encontrado";
+                TempData["mensaje"] = "Opps no encontramos ese producto, pero tenemos para ti esta selecta variedad";
                 return RedirectToAction(nameof(ListadoProductosPorPalabra));
             }
         }
