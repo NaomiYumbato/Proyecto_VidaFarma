@@ -1,0 +1,134 @@
+﻿@{
+    ViewBag.Title = "Registro";
+}
+
+<style>
+    .body-register {
+        background-color: #f4f7fa;
+    }
+
+    .register-container {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+        .register-container h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+
+    button[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        background-color: black;
+        border: none;
+        color: white;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+        button[type="submit"]:hover {
+            background-color: green;
+        }
+
+    .error-message {
+        color: red;
+        font-size: 14px;
+        text-align: center;
+    }
+
+</style>
+
+<body class="body-register">
+    <div class="container d-flex justify-content-center align-items-center">
+        <div class="row justify-content-center w-100">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="register-container">
+                    <h2>Registro</h2>
+
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <p>Nombres</p>
+                                    <input type="text" name="nombres" placeholder="-------" required />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <p>Apellidos</p>
+                                    <input type="text" name="apellidos" placeholder="-------" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <p>DNI</p>
+                                    <input type="text" name="dni" placeholder="-------" required />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <p>Fecha de Nacimiento</p>
+                                    <input type="date" name="fechaNacimiento" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <p>Dirección</p>
+                                    <input type="text" name="direccion" placeholder="Av. xxxx" required />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <p>Correo Electronico</p>
+                                    <input type="email" name="correoElectronico" placeholder="ejemplo@gmail.com" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <p>Contraseña</p>
+                                    <input type="password" name="contrasenia" placeholder="********" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit">Registrar</button>
+                    </form>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="error-message">
+                            <p>@ViewBag.Error</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
