@@ -48,7 +48,7 @@
                     <td>@item.ImporteTotal.ToString("C")</td>
                     <td>
                         @Html.ActionLink("Eliminar", "EliminarArticulo",
-                                 new { idCarritoCompra = item.IdCarritoCompra, idCliente = item.IdCliente, idProducto = item.IdProducto },
+                                 new { idProducto = item.IdProducto },
                                  new { @class = "btn btn-danger btn-sm" })
                     </td>
                 </tr>

@@ -63,6 +63,7 @@
             <td>
                 <a href="@Url.Action("EditProducto", "Productos", new { id = item.id_producto })" class="btn btn-primary">Editar</a>|
                 @Html.ActionLink("Eliminar", "DeleteProducto", new { id_producto = item.id_producto }, new { @class = "btn btn-danger", onclick = "return confirm('¿Estás seguro de eliminar este producto?')" })
+                    @Html.ActionLink("Agregar al Carrito", "AgregarAlCarrito", "Carrito", new { idProducto = item.id_producto }, new { @class = "btn btn-success" })
             </td>
         </tr>
 }
