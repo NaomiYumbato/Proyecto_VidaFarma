@@ -5,16 +5,16 @@ using System.Diagnostics;
 
 namespace PryVidaFarma.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
 
         private readonly CategoriasDAO categoriasDAO;
 
-        public HomeController(ILogger<HomeController> logger, CategoriasDAO _categoriasDAO)
+        public HomeController(ILogger<HomeController> logger, CategoriasDAO categoriasDAO) : base(categoriasDAO)
         {
             _logger = logger;
-            categoriasDAO = _categoriasDAO;
+            this.categoriasDAO = categoriasDAO;
         }
 
         public IActionResult lstCategorias()

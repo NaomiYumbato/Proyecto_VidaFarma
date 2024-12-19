@@ -9,14 +9,14 @@ using System.Drawing;
 
 namespace PryVidaFarma.Controllers
 {
-    public class ProductosController : Controller
+    public class ProductosController : BaseController
     {
         private readonly ProductosDAO productsDAO;
         private readonly CategoriasDAO categoriasDAO;
         private readonly AplicationContext context;
         private readonly IWebHostEnvironment host;
         public ProductosController(ProductosDAO productsDAO, CategoriasDAO categoriasDAO,
-                                    IWebHostEnvironment host, AplicationContext context)
+                                    IWebHostEnvironment host, AplicationContext context) : base(categoriasDAO)
         {
             this.productsDAO = productsDAO;
             this.categoriasDAO = categoriasDAO;

@@ -7,19 +7,24 @@
 <div class="px-4">
     <h2>Detalles del Producto</h2>
 
-    <div class="bg-secondary rounded">
-        <div class="d-flex flex-column p-5">
-            <div class="col-sm-2 mx-2">
-                @Html.DisplayFor(model => model.imagen)
+    <div class="bg-white rounded">
+        <div class="d-flex flex-row p-5">
+            <!-- Imagen -->
+            <div class="d-flex justify-content-center me-4" style="flex: 1;">
+                <img style="width:250px; height:250px; object-fit:cover;" src="@Model.imagen" class="card-img-top img-fluid" alt="Imagen del producto">
             </div>
-            <div class="col-sm-10 mx-2">
-                <h4>@Html.DisplayFor(model => model.nombre_producto)</h4>
-                <p><strong>Stock:</strong> @Html.DisplayFor(model => model.stock)</p>
-                <p><strong>Descripción:</strong> @Html.DisplayFor(model => model.detalles)</p>
+
+            <!-- Texto -->
+            <div class="col-sm-10 mx-2" style="flex: 2;">
+                <h3><strong>@Html.DisplayFor(model => model.nombre_producto)</strong></h3>
+                <h6><strong>Descripción:</strong></h6> 
+                <h4>@Html.DisplayFor(model => model.detalles)</h4>
+                <h6><strong>Categoría:</strong></h6>
+                <h4>@Html.DisplayFor(model => model.categoria.nombre_categoria)</h4>
                 <p><strong>Precio:</strong> @Html.DisplayFor(model => model.precio)</p>
                 <a asp-action="AgregarAlCarrito" asp-route-id="@Model.id_producto" class="btn btn-success">Agregar al Carrito</a>
             </div>
         </div>
     </div>
-
+    <a href="@Context.Request.Headers["Referer"]" class="btn btn-secondary mt-3">Volver</a>
 </div>
