@@ -29,6 +29,25 @@
                     <img src="~/img/account.svg" alt="Cuenta" />
                 </a>
             </div>
+
+            @if (Context.Session.GetString("UsuarioNombre") != null)
+            {
+                <form action="@Url.Action("Logout", "Usuario")" method="post" class="d-flex align-items-center" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" style="border: none; background: none;">
+                        <img src="~/img/account.svg" alt="Cuenta" class="me-2" />
+                        <span style="color: black; text-decoration: none;">Cerrar Sesión</span>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a href="@Url.Action("Login", "Usuario")" class="d-flex align-items-center" style="color: black; text-decoration: none;">
+                    <img src="~/img/account.svg" alt="Cuenta" class="me-2" />
+                    <span>Iniciar Sesión</span>
+                </a>
+            }
+
         </div>
 
         @* Por ahora se queda este nav por que es el unico medio para desplazarse por la pagina*@

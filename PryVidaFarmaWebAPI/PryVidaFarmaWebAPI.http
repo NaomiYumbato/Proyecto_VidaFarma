@@ -1,0 +1,6 @@
+@PryVidaFarmaWebAPI_HostAddress = http://localhost:5251
+
+GET {{PryVidaFarmaWebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
