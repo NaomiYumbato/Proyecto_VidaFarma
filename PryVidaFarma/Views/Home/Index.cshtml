@@ -25,7 +25,7 @@
         @foreach(var item in Model.OrderBy(c => c.nombre_categoria.Length).Distinct().Take(4))
         {
             <div>
-                <a class="d-block text-light display-1 fw-bold lh-1" href="@Url.Action("ListadoProductosPorCategoria", "Productos", new { categoriaId = item.id_categoria })">@item.nombre_categoria</a>
+                <a class="d-block text-light display-6 fw-bold text-decoration-none lh-1" href="@Url.Action("ListadoProductosPorCategoria", "Productos", new { categoriaId = item.id_categoria })">@item.nombre_categoria</a>
             </div>
         }
     </div>
