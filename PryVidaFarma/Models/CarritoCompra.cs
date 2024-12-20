@@ -11,7 +11,7 @@ namespace PryVidaFarma.Models
         public int IdTipoPago { get; set; }
 
         // Método para deserializar el JSON y obtener los productos
-        public List<ProductoCarrito> ObtenerProductos()
+        public List<ProductoCarrito>? ObtenerProductos()
         {
             return string.IsNullOrEmpty(ProductosJson)
                 ? new List<ProductoCarrito>()
@@ -32,9 +32,10 @@ namespace PryVidaFarma.Models
         public string NombreProducto { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public decimal Precio { get; set; }
-        public decimal ImporteTotal { get; set; } // Permite asignación explícita
+        public decimal ImporteTotal { get; set; }
+        public string Imagen { get; set; } = string.Empty;
 
-        //public decimal ImporteTotal => Cantidad * Precio; 
+
     }
 
 

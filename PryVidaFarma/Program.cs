@@ -14,11 +14,11 @@ builder.Services.AddScoped<CarritoDao>();
 builder.Services.AddDbContext<AplicationContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("cad_cn")));
 
-// Configurar servicios de sesión
+// Configurar servicios de sesiï¿½n
 builder.Services.AddDistributedMemoryCache(); // Necesario para almacenar las sesiones en memoria
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Duración de la sesión
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Duraciï¿½n de la sesiï¿½n
     options.Cookie.HttpOnly = true; // Aumenta la seguridad al evitar acceso de JavaScript
     options.Cookie.IsEssential = true; // Para cumplir con RGPD/GDPR
     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
@@ -42,13 +42,13 @@ else
 // Middleware para enrutamiento
 app.UseRouting();
 
-// Middleware para servir archivos estáticos
+// Middleware para servir archivos estï¿½ticos
 app.UseStaticFiles();
 
-// Middleware de sesión
+// Middleware de sesiï¿½n
 app.UseSession(); // Este middleware debe estar presente y configurado
 
-// Middleware de autenticación y autorización (Eliminar si no usas autenticación con cookies)
+// Middleware de autenticaciï¿½n y autorizaciï¿½n (Eliminar si no usas autenticaciï¿½n con cookies)
 // app.UseAuthentication(); 
 app.UseAuthorization();
 

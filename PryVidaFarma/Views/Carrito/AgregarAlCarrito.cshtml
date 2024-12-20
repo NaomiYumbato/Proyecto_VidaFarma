@@ -4,51 +4,52 @@
     ViewData["Title"] = "Agregar al Carrito";
 }
 
-<h1>Agregar al Carrito</h1>
+<div class="container mt-5">
+   
 
-<div class="row">
-    <h4>Detalles del Producto</h4>
-    <hr />
-    <div class="col-md-8">
-        <dl class="row">
-            <dt class="col-sm-3">Código</dt>
-            <dd class="col-sm-9">@Model.id_producto</dd>
-            <dt class="col-sm-3">Nombre</dt>
-            <dd class="col-sm-9">@Model.nombre_producto</dd>
-            <dt class="col-sm-3">Precio</dt>
-            <dd class="col-sm-9">S/. @Model.precio.ToString("0.00")</dd>
-            <dt class="col-sm-3">Stock</dt>
-            <dd class="col-sm-9">@Model.stock</dd>
-            <dt class="col-sm-3">Detalles</dt>
-            <dd class="col-sm-9">@Model.detalles</dd>
-        </dl>
-    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8 bg-white rounded p-4">
+            <h5 class="text-center"> Agregar al carrito</h5>
+            <hr />
+            <div class="row">
+                <div class="col-md-8">
+                    <dl class="row">
+                        <dt class="col-sm-3">Código</dt>
+                        <dd class="col-sm-9">@Model.id_producto</dd>
+                        <dt class="col-sm-3">Nombre</dt>
+                        <dd class="col-sm-9">@Model.nombre_producto</dd>
+                        <dt class="col-sm-3">Precio</dt>
+                        <dd class="col-sm-9">S/. @Model.precio.ToString("0.00")</dd>
+                        <dt class="col-sm-3">Stock</dt>
+                        <dd class="col-sm-9">@Model.stock</dd>
+                        <dt class="col-sm-3">Detalles</dt>
+                        <dd class="col-sm-9">@Model.detalles</dd>
+                    </dl>
+                </div>
 
-    <div class="col-md-4 text-center">
-        <img src="@Model.imagen" alt="@Model.nombre_producto" class="img-fluid rounded" style="width: 220px; height: 220px;" />
+                <div class="col-md-4 text-center">
+                    <img src="@Model.imagen" alt="@Model.nombre_producto" class="img-fluid rounded" style="width: 220px; height: 220px;" />
+                </div>
+            </div>
+            <hr />
+            <form asp-action="AgregarAlCarrito" method="post">
+                <div class="form-group">
+                    <label for="cantidad">Ingrese Cantidad:</label>
+                    <input type="number" name="cantidad" id="cantidad" class="form-control" value="1" min="1" max="@Model.stock" step="1" />
+                    <input type="hidden" name="idProducto" value="@Model.id_producto" />
+                    <input type="hidden" name="precio" value="@Model.precio" />
+                    <br />
+                    <input type="submit" value="Agregar al Carrito" class="btn btn-success" />
+                    <a href="@Url.Action("ListadoProductos", "Productos")" class="btn btn-secondary">Seguir Comprando</a>
+                </div>
+            </form>
+            <br />
+            @if (TempData["mensaje"] != null)
+            {
+                <div class="alert alert-info">
+                    <h4><strong>@TempData["mensaje"]</strong></h4>
+                </div>
+            }
+        </div>
     </div>
 </div>
-
-<hr />
-
-<form asp-action="AgregarAlCarrito" method="post">
-    <div>
-        <label for="cantidad">Ingrese Cantidad:</label>
-        <input type="number" name="cantidad" id="cantidad" class="form-control" value="1" min="1" max="@Model.stock" />
-        <input type="hidden" name="idProducto" value="@Model.id_producto" />
-        <input type="hidden" name="precio" value="@Model.precio" />
-        <br />
-        <input type="submit" value="Agregar al Carrito" class="btn btn-primary" />
-        <a href="@Url.Action("Productos", "Productos")" class="btn btn-warning">Seguir Comprando</a>
-        <a href="@Url.Action("VerCarrito", "Carrito")" class="btn btn-success">Ver Carrito</a>
-    </div>
-</form>
-
-<br />
-
-@if (TempData["mensaje"] != null)
-{
-    <div class="alert alert-info">
-        <h4><strong>@TempData["mensaje"]</strong></h4>
-    </div>
-}

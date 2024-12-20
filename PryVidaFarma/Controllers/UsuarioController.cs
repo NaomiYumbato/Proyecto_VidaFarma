@@ -90,16 +90,8 @@ namespace PryVidaFarma.Controllers
                     HttpContext.Session.SetString("UsuarioId", user.IdCliente.ToString());
                     HttpContext.Session.SetString("UsuarioNombre", $"{user.Nombres} {user.Apellidos}");
 
+                    return RedirectToAction("Index", "Home");
 
-                    var refererUrl = Request.Headers["Referer"].ToString();
-                    if (!string.IsNullOrEmpty(refererUrl))
-                    {
-                        return Redirect(refererUrl);  
-                    }
-                    else
-                    {
-                        return RedirectToAction("Index", "Home"); 
-                    }
                 }
                 else
                 {
