@@ -1,5 +1,4 @@
-﻿// CarritoController.cs
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PryVidaFarma.DAO;
@@ -31,52 +30,45 @@ namespace PryVidaFarma.Controllers
                 : JsonConvert.DeserializeObject<List<CarritoCompra>>(carritoJson) ?? new List<CarritoCompra>();
 
         }
-
-        // Mostrar el carrito del cliente logueado o no logueado
+        //VER CARRITO
+        // Mostrar el carrito 
         [HttpGet]
         public ActionResult VerCarrito(int? idCliente)
         {
             CarritoCompra carritoCompra;
 
-            if (idCliente.HasValue && idCliente > 0)
+            // Obtenemos el carrito desde sesión 
+            var productosSesion = ObtenerCarritoDesdeSesion();
+
+            // Deserializar los productos y consolidarlos
+            var productos = productosSesion
+                .SelectMany(c => JsonConvert.DeserializeObject<List<ProductoCarrito>>(c.ProductosJson))
+                .ToList();
+
+            // Construir --> carrito con los productos deserializados
+            carritoCompra = new CarritoCompra
             {
-                // Obtener carrito para usuarios logueados desde la base de datos
-                carritoCompra = carritoDao.ObtenerCarritoCompletoPorCliente(idCliente.Value);
-            }
-            else
-            {
-                // Obtener carrito desde sesión para usuarios no logueados
-                var productosSesion = ObtenerCarritoDesdeSesion();
+                ProductosJson = JsonConvert.SerializeObject(productos),
+                ImporteTotal = productos.Sum(p => p.Cantidad * p.Precio)
+            };
 
-                // Deserializar los productos y consolidarlos
-                var productos = productosSesion
-                    .SelectMany(c => JsonConvert.DeserializeObject<List<ProductoCarrito>>(c.ProductosJson))
-                    .ToList();
-
-                // Construir el carrito con los productos deserializados
-                carritoCompra = new CarritoCompra
-                {
-                    ProductosJson = JsonConvert.SerializeObject(productos),
-                    ImporteTotal = productos.Sum(p => p.Cantidad * p.Precio)
-                };
-            }
-
-            // Validar si el carrito tiene productos
+            // Validamos si el carrito tiene productos
             if (string.IsNullOrEmpty(carritoCompra.ProductosJson) || !carritoCompra.ObtenerProductos().Any())
             {
                 TempData["mensaje"] = "El carrito está vacío.";
-                return RedirectToAction("ListadoProductos");
+                return RedirectToAction("ListadoProductos", "Productos");
             }
 
-            // Pasar los datos necesarios a la vista
+            // Pasar los datos  a la vista
             ViewBag.Total = carritoCompra.ImporteTotal;
 
-            return View(carritoCompra); // Enviar CarritoCompra a la vista
+            // --> CarritoCompra a la vista
+            return View(carritoCompra);
         }
 
 
-
-
+        //AGREGAR AL CARRITO --> OBTENER
+        //obtenemos los productos por id 
         [HttpGet]
         public ActionResult AgregarAlCarrito(int idProducto)
         {
@@ -91,6 +83,7 @@ namespace PryVidaFarma.Controllers
             return View(producto);
         }
 
+        //
         [HttpPost]
         public ActionResult AgregarAlCarrito(int? idCliente, int idProducto, int cantidad, decimal precio, decimal importeTotal)
         {
@@ -106,45 +99,12 @@ namespace PryVidaFarma.Controllers
                 Cantidad = cantidad,
                 Precio = precio,
                 ImporteTotal = precio * cantidad,
-                NombreProducto = carritoDao.ObtenerProductoPorId(idProducto)?.nombre_producto ?? "Producto desconocido"
+                NombreProducto = carritoDao.ObtenerProductoPorId(idProducto)?.nombre_producto ?? "Producto desconocido",
+                Imagen = carritoDao.ObtenerProductoPorId(idProducto)?.imagen??"Imagen"
             };
 
-            if (idCliente.HasValue && idCliente > 0)
-            {
-                var carritoExistente = carritoDao.ObtenerCarritoCompletoPorCliente(idCliente.Value);
-
-                if (carritoExistente == null)
-                {
-                    var nuevoCarrito = new CarritoCompra
-                    {
-                        IdCliente = idCliente.Value,
-                        ProductosJson = JsonConvert.SerializeObject(new List<ProductoCarrito> { nuevoProducto }),
-                        ImporteTotal = nuevoProducto.ImporteTotal
-                    };
-                    carritoDao.AgregarCarrito(nuevoCarrito);
-                }
-                else
-                {
-                    var productos = carritoExistente.ObtenerProductos();
-                    var existente = productos.FirstOrDefault(p => p.IdProducto == idProducto);
-
-                    if (existente == null)
-                    {
-                        productos.Add(nuevoProducto);
-                    }
-                    else
-                    {
-                        existente.Cantidad += cantidad;
-                    }
-
-                    carritoExistente.ProductosJson = JsonConvert.SerializeObject(productos);
-                    carritoExistente.CalcularImporteTotal();
-                    carritoDao.ActualizarCarrito(carritoExistente);
-                }
-            }
-            else
-            {
-                var carrito = ObtenerCarritoDesdeSesion();
+            
+            var carrito = ObtenerCarritoDesdeSesion();
                 var existente = carrito.FirstOrDefault(c => c.ProductosJson.Contains(idProducto.ToString()));
 
                 if (existente == null)
@@ -174,39 +134,35 @@ namespace PryVidaFarma.Controllers
                 }
 
                 GuardarCarritoEnSesion(carrito);
-            }
+            
 
             TempData["mensaje"] = "Producto agregado correctamente.";
-            return RedirectToAction("VerCarrito", new { idCliente });
+            return RedirectToAction("VerCarrito");
         }
 
-        public ActionResult EliminarArticulo(int idCarritoCompra, int? idCliente, int idProducto)
+
+        //ELIMINAR ARTICULO DEL CARRITO
+        public ActionResult EliminarArticulo(int idProducto)
         {
-            if (idCliente.HasValue)
-            {
-                carritoDao.EliminarArticulo(idCarritoCompra);
-            }
-            else
-            {
-                var carrito = ObtenerCarritoDesdeSesion();
-                carrito.RemoveAll(c => c.ProductosJson.Contains(idProducto.ToString()));
-                GuardarCarritoEnSesion(carrito);
-            }
+            var carrito = ObtenerCarritoDesdeSesion();
+            carrito.RemoveAll(c => c.ProductosJson.Contains(idProducto.ToString()));
+            GuardarCarritoEnSesion(carrito);
 
             TempData["mensaje"] = "Producto eliminado del carrito.";
-            return RedirectToAction("VerCarrito", new { idCliente });
+            return RedirectToAction("VerCarrito");
         }
 
 
+        //SELECCIONAR FORMA DE PAGO
         [HttpGet]
         public ActionResult SeleccionarTipoPago(int idCliente)
         {
             ViewBag.IdCliente = idCliente;
 
-            // Obtener lista de tipos de pago
+            // Obtenemos la lista de tipos de pago
             var tiposPago = carritoDao.ObtenerTiposPago();
 
-            // Obtener el carrito desde sesión
+            // Obtenemos el carrito desde sesión
             var carritoSesion = ObtenerCarritoDesdeSesion();
 
             if (carritoSesion == null || !carritoSesion.Any())
@@ -215,7 +171,7 @@ namespace PryVidaFarma.Controllers
                 return RedirectToAction("VerCarrito");
             }
 
-            // Obtener productos del carrito actual desde sesión
+            // Obtenemos los productos del carrito actual desde sesión
             var productos = carritoSesion
                 .SelectMany(c => c.ObtenerProductos())
                 .ToList();
@@ -226,41 +182,25 @@ namespace PryVidaFarma.Controllers
                 return RedirectToAction("VerCarrito");
             }
 
-            // Calcular importe total y completar información
+            // Calcular importe total
             foreach (var producto in productos)
             {
                 producto.ImporteTotal = producto.Cantidad * producto.Precio;
             }
 
-            // Asignar datos a ViewBag para la vista
+            // ViewBag
             ViewBag.Total = productos.Sum(p => p.ImporteTotal);
             ViewBag.ProductosJson = JsonConvert.SerializeObject(productos);
 
             return View(tiposPago);
         }
 
-
-
-
-        void SincronizarCarritoEnSesion(CarritoCompra carrito)
-        {
-            var carritosSesion = ObtenerCarritoDesdeSesion();
-            var carritoExistente = carritosSesion.FirstOrDefault(c => c.IdCarritoCompra == carrito.IdCarritoCompra);
-
-            if (carritoExistente != null)
-            {
-                carritosSesion.Remove(carritoExistente);
-            }
-            carritosSesion.Add(carrito);
-
-            GuardarCarritoEnSesion(carritosSesion);
-        }
-
+        //CONFIRMAR COMPRA
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult ConfirmarCompra(string productosJson, decimal importeTotal, int idTipoPago)
         {
-            // Obtener el cliente desde la sesión
+            // Obtenemos el cliente desde la sesión
             string usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (!int.TryParse(usuarioIdStr, out int idCliente) || idCliente <= 0)
             {
@@ -268,14 +208,14 @@ namespace PryVidaFarma.Controllers
                 return RedirectToAction("Login", "Usuario");
             }
 
-            // Validar que el carrito tenga productos y el importe sea válido
+            // validamos que el carrito tenga productos y que el importe sea válido
             if (string.IsNullOrEmpty(productosJson) || importeTotal <= 0)
             {
                 TempData["mensaje"] = "El carrito está vacío o el importe total no es válido.";
                 return RedirectToAction("VerCarrito");
             }
 
-            // Validar que el tipo de pago sea válido
+            // validamos que el tipo de pago sea válido
             if (idTipoPago <= 0)
             {
                 TempData["mensaje"] = "Debe seleccionar un tipo de pago válido.";
@@ -299,37 +239,40 @@ namespace PryVidaFarma.Controllers
 
 
 
-
-
-
-
-
+      
+         //Detalle-BoletaCompra
         [HttpGet]
         public IActionResult DetalleCompra(int idCarritoCompra)
         {
             try
             {
+                // Validación del ID del carrito
                 if (idCarritoCompra <= 0)
                 {
                     TempData["mensaje"] = "ID de carrito inválido.";
                     return RedirectToAction("VerCarrito");
                 }
 
-                var detalleCompra = carritoDao.ObtenerDetallesCompra(idCarritoCompra);
+                // Llamar al DAO para obtener los datos del carrito y del cliente
+                var detalleBoleta = carritoDao.ObtenerDetalleBoleta(idCarritoCompra);
 
-                if (detalleCompra == null || !detalleCompra.Any())
+                // Validación si no se encuentran datos
+                if (detalleBoleta == null || detalleBoleta.Productos == null || !detalleBoleta.Productos.Any())
                 {
                     TempData["mensaje"] = "No se encontraron detalles para el carrito especificado.";
                     return RedirectToAction("VerCarrito");
                 }
 
-                return View("DetalleCompra", detalleCompra);
+                // Pasar los datos a la vista de la boleta
+                return View("DetalleCompra", detalleBoleta);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["mensaje"] = "Ocurrió un error inesperado al obtener los detalles de la compra.";
+                // Manejo de errores
+                TempData["mensaje"] = $"Ocurrió un error inesperado: {ex.Message}";
                 return RedirectToAction("VerCarrito");
             }
         }
+
     }
 }

@@ -4,25 +4,25 @@
     ViewData["Title"] = "DetailsProducto";
 }
 
-<div class="px-4">
-    <h2>Detalles del Producto</h2>
+<div class="container mt-5">
+    <h2 class="text-center text-success">Detalles del Producto</h2>
 
-    <div class="bg-white rounded">
-        <div class="d-flex flex-row p-5">
+    <div class="bg-white rounded p-4">
+        <div class="row justify-content-center">
             <!-- Imagen -->
-            <div class="d-flex justify-content-center me-4" style="flex: 1;">
+            <div class="col-md-4 text-center">
                 <img style="width:250px; height:250px; object-fit:cover;" src="@Model.imagen" class="card-img-top img-fluid" alt="Imagen del producto">
             </div>
 
             <!-- Texto -->
-            <div class="col-sm-10 mx-2" style="flex: 2;">
+            <div class="col-md-8">
                 <h3><strong>@Html.DisplayFor(model => model.nombre_producto)</strong></h3>
-                <h6><strong>Descripción:</strong></h6> 
+                <h6><strong>Descripción:</strong></h6>
                 <h4>@Html.DisplayFor(model => model.detalles)</h4>
                 <h6><strong>Categoría:</strong></h6>
                 <h4>@Html.DisplayFor(model => model.categoria.nombre_categoria)</h4>
                 <p><strong>Precio:</strong> @Html.DisplayFor(model => model.precio)</p>
-                <a asp-action="AgregarAlCarrito" asp-route-id="@Model.id_producto" class="btn btn-success">Agregar al Carrito</a>
+                <p>@Html.ActionLink("Agregar al Carrito", "AgregarAlCarrito", "Carrito", new { idProducto = Model.id_producto }, new { @class = "btn btn-success" })</p>
             </div>
         </div>
     </div>
