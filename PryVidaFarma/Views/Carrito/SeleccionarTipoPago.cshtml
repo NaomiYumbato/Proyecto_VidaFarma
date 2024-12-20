@@ -1,48 +1,81 @@
-﻿@model IEnumerable<TipoPago>
+﻿@using Newtonsoft.Json
+
+@model List<PryVidaFarma.Models.TipoPago>
 
 @{
     ViewBag.Title = "Seleccionar Tipo de Pago";
+
+    // Deserialize the JSON from ViewBag
+    var carrito = ViewBag.ProductosJson != null
+        ? JsonConvert.DeserializeObject<List<PryVidaFarma.Models.ProductoCarrito>>(ViewBag.ProductosJson.ToString())
+        : new List<PryVidaFarma.Models.ProductoCarrito>();
+
+    decimal total = ViewBag.Total ?? 0; // Total general
+    int idCliente = ViewBag.IdCliente ?? 0; // ID del cliente (si existe)
 }
 
 <h2>Seleccionar Tipo de Pago</h2>
 
-<form asp-action="ConfirmarCompra" method="post">
-    <input type="hidden" name="idCliente" value="@ViewBag.IdCliente" />
-    <div class="form-group">
-        <label for="idTipoPago">Tipo de Pago</label>
-        <select name="idTipoPago" class="form-control" required>
-            @foreach (var tipo in Model)
-            {
-                <option value="@tipo.IdTipoPago">@tipo.Descripcion</option>
-            }
-        </select>
+@if (TempData["mensaje"] != null)
+{
+    <div class="alert alert-warning">
+        <strong>@TempData["mensaje"]</strong>
     </div>
-    <button type="submit" class="btn btn-primary">Confirmar Compra</button>
-</form>
+}
 
-<h3>Resumen del Carrito</h3>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Importe Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in ViewBag.Carrito)
-        {
-            <tr>
-                <td>@item.NombreProducto</td>
-                <td>@item.Cantidad</td>
-                <td>@item.Precio.ToString("C")</td>
-                <td>@item.ImporteTotal.ToString("C")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="row">
+    <div class="col-md-6">
+        <h4>Resumen del Carrito</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in carrito)
+                {
+                    <tr>
+                        <td>@item.NombreProducto</td>
+                        <td>@item.Cantidad</td>
+                        <td>@item.Precio.ToString("C")</td>
+                        <td>@item.ImporteTotal.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="alert alert-info">
+            <h5>Total General: <strong>@total.ToString("C")</strong></h5>
+        </div>
+    </div>
 
-<div class="alert alert-info">
-    <h4>Total General: <strong>@ViewBag.Total.ToString("C")</strong></h4>
+    <div class="col-md-6">
+
+        <h4>Seleccionar Tipo de Pago</h4>
+
+        <form asp-action="ConfirmarCompra" method="post">
+            @Html.AntiForgeryToken()
+           
+            <input type="hidden" name="importeTotal" value="@total" />
+            <!-- ID del cliente -->
+            <input type="hidden" name="idCliente" value="@ViewBag.IdCliente" />
+            <input type="hidden" name="productosJson" value='@ViewBag.ProductosJson' />
+
+            <div class="form-group">
+                <label for="idTipoPago">Tipo de Pago</label>
+                <select name="idTipoPago" class="form-control" required>
+                    <option value="">Seleccione un tipo de pago</option>
+                    @foreach (var tipoPago in Model)
+                    {
+                        <option value="@tipoPago.IdTipoPago">@tipoPago.Descripcion</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Confirmar Compra</button>
+        </form>
+
+    </div>
 </div>

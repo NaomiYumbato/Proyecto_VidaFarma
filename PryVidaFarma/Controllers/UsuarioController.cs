@@ -3,15 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.MSIdentity.Shared;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using PryVidaFarma.DAO;
 using PryVidaFarma.Models;
 
 namespace PryVidaFarma.Controllers
 {
-    public class UsuarioController : Controller
+    public class UsuarioController : BaseController
     {
         private readonly HttpClient _httpClient;
 
-        public UsuarioController()
+        public UsuarioController(CategoriasDAO categoriasDAO) : base(categoriasDAO)
         {
             _httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5251/api/Usuario/") };
         }
