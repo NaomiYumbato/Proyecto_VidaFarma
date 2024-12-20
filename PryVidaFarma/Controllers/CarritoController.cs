@@ -1,15 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// CarritoController.cs
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PryVidaFarma.DAO;
 using PryVidaFarma.Models;
 
 namespace PryVidaFarma.Controllers
 {
-    public class CarritoController : Controller
+    public class CarritoController : BaseController
     {
         private readonly CarritoDao carritoDao;
 
-        public CarritoController(CarritoDao _carritoDao)
+        public CarritoController(CarritoDao _carritoDao, CategoriasDAO categoriasDAO) : base(categoriasDAO)
         {
             carritoDao = _carritoDao;
         }
@@ -21,47 +23,63 @@ namespace PryVidaFarma.Controllers
         }
 
         // Deserializar el carrito temporal desde sesión
-         List<CarritoCompra> ObtenerCarritoDesdeSesion()
+        List<CarritoCompra> ObtenerCarritoDesdeSesion()
         {
             var carritoJson = HttpContext.Session.GetString("CarritoTemporal");
-            //devolver una lista vacia en lugar de null
             return string.IsNullOrEmpty(carritoJson)
-             ? new List<CarritoCompra>()
-             : JsonConvert.DeserializeObject<List<CarritoCompra>>(carritoJson) ?? new List<CarritoCompra>();
+                ? new List<CarritoCompra>()
+                : JsonConvert.DeserializeObject<List<CarritoCompra>>(carritoJson) ?? new List<CarritoCompra>();
+
         }
 
         // Mostrar el carrito del cliente logueado o no logueado
+        [HttpGet]
         public ActionResult VerCarrito(int? idCliente)
         {
-            List<CarritoCompra> listacarrito;
+            CarritoCompra carritoCompra;
 
-            // Cliente logueado
-            if (idCliente.HasValue)
+            if (idCliente.HasValue && idCliente > 0)
             {
-                listacarrito = carritoDao.GetCarritoPorCliente(idCliente.Value);
+                // Obtener carrito para usuarios logueados desde la base de datos
+                carritoCompra = carritoDao.ObtenerCarritoCompletoPorCliente(idCliente.Value);
             }
-            // Cliente no logueado
             else
             {
-                listacarrito = ObtenerCarritoDesdeSesion();
+                // Obtener carrito desde sesión para usuarios no logueados
+                var productosSesion = ObtenerCarritoDesdeSesion();
+
+                // Deserializar los productos y consolidarlos
+                var productos = productosSesion
+                    .SelectMany(c => JsonConvert.DeserializeObject<List<ProductoCarrito>>(c.ProductosJson))
+                    .ToList();
+
+                // Construir el carrito con los productos deserializados
+                carritoCompra = new CarritoCompra
+                {
+                    ProductosJson = JsonConvert.SerializeObject(productos),
+                    ImporteTotal = productos.Sum(p => p.Cantidad * p.Precio)
+                };
             }
 
-            // Obtener nombres de productos
-            foreach (var item in listacarrito)
+            // Validar si el carrito tiene productos
+            if (string.IsNullOrEmpty(carritoCompra.ProductosJson) || !carritoCompra.ObtenerProductos().Any())
             {
-                var producto = carritoDao.ObtenerProductoPorId(item.IdProducto);
-                item.NombreProducto = producto?.nombre_producto ?? "Producto no encontrado";
+                TempData["mensaje"] = "El carrito está vacío.";
+                return RedirectToAction("ListadoProductos");
             }
 
-            ViewBag.Total = listacarrito.Sum(c => c.ImporteTotal);
-            return View(listacarrito);
+            // Pasar los datos necesarios a la vista
+            ViewBag.Total = carritoCompra.ImporteTotal;
+
+            return View(carritoCompra); // Enviar CarritoCompra a la vista
         }
 
-        //17/12/2024
+
+
+
         [HttpGet]
         public ActionResult AgregarAlCarrito(int idProducto)
         {
-            // Obtener un producto por su ID
             var producto = carritoDao.ObtenerProductoPorId(idProducto);
 
             if (producto == null)
@@ -72,11 +90,9 @@ namespace PryVidaFarma.Controllers
 
             return View(producto);
         }
-        //Fin
 
-        // Agregar artículo al carrito        
         [HttpPost]
-        public ActionResult AgregarAlCarrito(int? idCliente, int idProducto, int cantidad, decimal precio)
+        public ActionResult AgregarAlCarrito(int? idCliente, int idProducto, int cantidad, decimal precio, decimal importeTotal)
         {
             if (cantidad <= 0 || precio <= 0)
             {
@@ -84,32 +100,77 @@ namespace PryVidaFarma.Controllers
                 return RedirectToAction("ListadoProductos");
             }
 
-            var carritoCompra = new CarritoCompra
+            var nuevoProducto = new ProductoCarrito
             {
-                IdCliente = idCliente ?? 0,
                 IdProducto = idProducto,
                 Cantidad = cantidad,
-                Precio = precio
+                Precio = precio,
+                ImporteTotal = precio * cantidad,
+                NombreProducto = carritoDao.ObtenerProductoPorId(idProducto)?.nombre_producto ?? "Producto desconocido"
             };
-            carritoCompra.CalcularImporte();
 
-            if (idCliente.HasValue)
+            if (idCliente.HasValue && idCliente > 0)
             {
-                carritoDao.AgregarCarrito(carritoCompra);
+                var carritoExistente = carritoDao.ObtenerCarritoCompletoPorCliente(idCliente.Value);
+
+                if (carritoExistente == null)
+                {
+                    var nuevoCarrito = new CarritoCompra
+                    {
+                        IdCliente = idCliente.Value,
+                        ProductosJson = JsonConvert.SerializeObject(new List<ProductoCarrito> { nuevoProducto }),
+                        ImporteTotal = nuevoProducto.ImporteTotal
+                    };
+                    carritoDao.AgregarCarrito(nuevoCarrito);
+                }
+                else
+                {
+                    var productos = carritoExistente.ObtenerProductos();
+                    var existente = productos.FirstOrDefault(p => p.IdProducto == idProducto);
+
+                    if (existente == null)
+                    {
+                        productos.Add(nuevoProducto);
+                    }
+                    else
+                    {
+                        existente.Cantidad += cantidad;
+                    }
+
+                    carritoExistente.ProductosJson = JsonConvert.SerializeObject(productos);
+                    carritoExistente.CalcularImporteTotal();
+                    carritoDao.ActualizarCarrito(carritoExistente);
+                }
             }
             else
             {
                 var carrito = ObtenerCarritoDesdeSesion();
-                var existente = carrito.FirstOrDefault(c => c.IdProducto == idProducto);
+                var existente = carrito.FirstOrDefault(c => c.ProductosJson.Contains(idProducto.ToString()));
 
                 if (existente == null)
                 {
-                    carrito.Add(carritoCompra);
+                    carrito.Add(new CarritoCompra
+                    {
+                        ProductosJson = JsonConvert.SerializeObject(new List<ProductoCarrito> { nuevoProducto }),
+                        ImporteTotal = nuevoProducto.ImporteTotal
+                    });
                 }
                 else
                 {
-                    existente.Cantidad += cantidad;
-                    existente.CalcularImporte();
+                    var productos = JsonConvert.DeserializeObject<List<ProductoCarrito>>(existente.ProductosJson);
+                    var prodExistente = productos.FirstOrDefault(p => p.IdProducto == idProducto);
+
+                    if (prodExistente == null)
+                    {
+                        productos.Add(nuevoProducto);
+                    }
+                    else
+                    {
+                        prodExistente.Cantidad += cantidad;
+                    }
+
+                    existente.ProductosJson = JsonConvert.SerializeObject(productos);
+                    existente.CalcularImporteTotal();
                 }
 
                 GuardarCarritoEnSesion(carrito);
@@ -119,20 +180,16 @@ namespace PryVidaFarma.Controllers
             return RedirectToAction("VerCarrito", new { idCliente });
         }
 
-
-        // Eliminar artículo del carrito
         public ActionResult EliminarArticulo(int idCarritoCompra, int? idCliente, int idProducto)
-        // Cliente logueado
         {
-            if (idCliente.HasValue) 
+            if (idCliente.HasValue)
             {
                 carritoDao.EliminarArticulo(idCarritoCompra);
             }
-            // Cliente no logueado
             else
             {
                 var carrito = ObtenerCarritoDesdeSesion();
-                carrito.RemoveAll(c => c.IdProducto == idProducto);
+                carrito.RemoveAll(c => c.ProductosJson.Contains(idProducto.ToString()));
                 GuardarCarritoEnSesion(carrito);
             }
 
@@ -140,8 +197,6 @@ namespace PryVidaFarma.Controllers
             return RedirectToAction("VerCarrito", new { idCliente });
         }
 
-
-        //    
 
         [HttpGet]
         public ActionResult SeleccionarTipoPago(int idCliente)
@@ -151,71 +206,130 @@ namespace PryVidaFarma.Controllers
             // Obtener lista de tipos de pago
             var tiposPago = carritoDao.ObtenerTiposPago();
 
-            // Obtener el carrito del cliente
-            List<CarritoCompra> listacarrito;
-            if (idCliente > 0)
+            // Obtener el carrito desde sesión
+            var carritoSesion = ObtenerCarritoDesdeSesion();
+
+            if (carritoSesion == null || !carritoSesion.Any())
             {
-                listacarrito = carritoDao.GetCarritoPorCliente(idCliente);
+                TempData["mensaje"] = "El carrito está vacío.";
+                return RedirectToAction("VerCarrito");
             }
-            else
+
+            // Obtener productos del carrito actual desde sesión
+            var productos = carritoSesion
+                .SelectMany(c => c.ObtenerProductos())
+                .ToList();
+
+            if (!productos.Any())
             {
-                listacarrito = ObtenerCarritoDesdeSesion();
+                TempData["mensaje"] = "No hay productos en el carrito.";
+                return RedirectToAction("VerCarrito");
             }
-            foreach (var item in listacarrito)
+
+            // Calcular importe total y completar información
+            foreach (var producto in productos)
             {
-                var producto = carritoDao.ObtenerProductoPorId(item.IdProducto);
-                item.NombreProducto = producto?.nombre_producto ?? "Producto no encontrado";
+                producto.ImporteTotal = producto.Cantidad * producto.Precio;
             }
-            // Calcular el importe total del carrito
-            ViewBag.Total = listacarrito.Sum(c => c.ImporteTotal);
-            ViewBag.Carrito = listacarrito;
+
+            // Asignar datos a ViewBag para la vista
+            ViewBag.Total = productos.Sum(p => p.ImporteTotal);
+            ViewBag.ProductosJson = JsonConvert.SerializeObject(productos);
 
             return View(tiposPago);
         }
 
 
-        [HttpGet]
-        public ActionResult DetalleCompra(int idCarritoCompra)
+
+
+        void SincronizarCarritoEnSesion(CarritoCompra carrito)
         {
-            // Obtener los detalles de la compra
-            var detalleCompra = carritoDao.ObtenerDetallesCompra(idCarritoCompra);
-            if (detalleCompra == null || !detalleCompra.Any())
+            var carritosSesion = ObtenerCarritoDesdeSesion();
+            var carritoExistente = carritosSesion.FirstOrDefault(c => c.IdCarritoCompra == carrito.IdCarritoCompra);
+
+            if (carritoExistente != null)
             {
-                TempData["mensaje"] = "No hay detalles de compra disponibles.";
-                return RedirectToAction("VerCarrito", new { idCarritoCompra });
+                carritosSesion.Remove(carritoExistente);
+            }
+            carritosSesion.Add(carrito);
+
+            GuardarCarritoEnSesion(carritosSesion);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ConfirmarCompra(string productosJson, decimal importeTotal, int idTipoPago)
+        {
+            // Obtener el cliente desde la sesión
+            string usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
+            if (!int.TryParse(usuarioIdStr, out int idCliente) || idCliente <= 0)
+            {
+                TempData["mensaje"] = "Debe iniciar sesión para confirmar la compra.";
+                return RedirectToAction("Login", "Usuario");
             }
 
-            TempData["DetalleCompra"] = JsonConvert.SerializeObject(detalleCompra);
+            // Validar que el carrito tenga productos y el importe sea válido
+            if (string.IsNullOrEmpty(productosJson) || importeTotal <= 0)
+            {
+                TempData["mensaje"] = "El carrito está vacío o el importe total no es válido.";
+                return RedirectToAction("VerCarrito");
+            }
 
-            return View("DetalleCompra", detalleCompra);
+            // Validar que el tipo de pago sea válido
+            if (idTipoPago <= 0)
+            {
+                TempData["mensaje"] = "Debe seleccionar un tipo de pago válido.";
+                return RedirectToAction("SeleccionarTipoPago");
+            }
 
+            // Confirmar la compra
+            var (idCarritoCompra, mensaje) = carritoDao.ConfirmarCompra(idCliente, productosJson, importeTotal, idTipoPago);
+
+            TempData["mensaje"] = mensaje;
+
+            if (idCarritoCompra > 0)
+            {
+                HttpContext.Session.Remove("CarritoTemporal");
+                return RedirectToAction("DetalleCompra", new { idCarritoCompra });
+            }
+
+            TempData["mensaje"] = mensaje ?? "Error al confirmar la compra.";
+            return RedirectToAction("VerCarrito", new { idCliente });
         }
 
 
 
-        /* [HttpPost]
-         public ActionResult ConfirmarCompra(int idCarritoCompra, int idProducto, int cantidad, decimal importeTotal, int idTipoPago)
-         {
-             // Obtener el id_cliente de la sesión
-             int? idCliente = Session["id_cliente"] as int?;
-
-             // Verificar si el cliente está logueado
-             if (idCliente == null || idCliente <= 0)
-             {
-                 TempData["mensaje"] = "Debe iniciar sesión para confirmar la compra.";
-                 return RedirectToAction("Login", "Account");  // Redirige al login o donde sea apropiado
-             }
-
-             // Confirmar la compra
-             var mensaje = carritoDao.ConfirmarCompra(idCarritoCompra, idCliente.Value, idProducto, cantidad, importeTotal, idTipoPago);
-             TempData["mensaje"] = mensaje;
-
-             // Redirigir a la acción de detalles de la compra
-             return RedirectToAction("DetalleCompra", new { idCarritoCompra, idTipoPago });
-         }*/
-       
 
 
 
+
+
+        [HttpGet]
+        public IActionResult DetalleCompra(int idCarritoCompra)
+        {
+            try
+            {
+                if (idCarritoCompra <= 0)
+                {
+                    TempData["mensaje"] = "ID de carrito inválido.";
+                    return RedirectToAction("VerCarrito");
+                }
+
+                var detalleCompra = carritoDao.ObtenerDetallesCompra(idCarritoCompra);
+
+                if (detalleCompra == null || !detalleCompra.Any())
+                {
+                    TempData["mensaje"] = "No se encontraron detalles para el carrito especificado.";
+                    return RedirectToAction("VerCarrito");
+                }
+
+                return View("DetalleCompra", detalleCompra);
+            }
+            catch (Exception)
+            {
+                TempData["mensaje"] = "Ocurrió un error inesperado al obtener los detalles de la compra.";
+                return RedirectToAction("VerCarrito");
+            }
+        }
     }
 }

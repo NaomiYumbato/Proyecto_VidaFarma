@@ -1,4 +1,5 @@
-﻿using PryVidaFarma.Models;
+﻿using Newtonsoft.Json;
+using PryVidaFarma.Models;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -8,55 +9,119 @@ namespace PryVidaFarma.DAO
     {
         private readonly string cad_cn;
 
-
         public CarritoDao(IConfiguration cfg)
         {
             cad_cn = cfg.GetConnectionString("cad_cn") ?? throw new InvalidOperationException("Cadena de conexión no configurada.");
         }
 
-
+        /// <summary>
         /// Agregar un artículo al carrito en la base de datos.
+        /// </summary>
         public void AgregarCarrito(CarritoCompra carrito)
         {
             SqlHelper.ExecuteNonQuery(
                 cad_cn,
                 CommandType.StoredProcedure,
-                "PA_AGREGAR_CARRITO_COMPRA",
+                "PA_CONFIRMAR_COMPRA",
                 new SqlParameter("@id_cliente", carrito.IdCliente),
-                new SqlParameter("@id_producto", carrito.IdProducto),
-                new SqlParameter("@cantidad", carrito.Cantidad),
+                new SqlParameter("@productos_json", carrito.ProductosJson),
+                new SqlParameter("@importeTotal", carrito.ImporteTotal),
+                new SqlParameter("@id_tipo_pago", carrito.IdTipoPago)
+            );
+        }
+
+        /// <summary>
+        /// Actualizar un carrito existente.
+        /// </summary>
+        public void ActualizarCarrito(CarritoCompra carrito)
+        {
+            SqlHelper.ExecuteNonQuery(
+                cad_cn,
+                CommandType.StoredProcedure,
+                "PA_ACTUALIZAR_CARRITO",
+                new SqlParameter("@id_carrito_compra", carrito.IdCarritoCompra),
+                new SqlParameter("@productos_json", carrito.ProductosJson),
                 new SqlParameter("@importe_total", carrito.ImporteTotal)
             );
         }
 
-        /// Obtener todos los artículos del carrito de un cliente específico.
-        public List<CarritoCompra> GetCarritoPorCliente(int idCliente)
+        public List<ProductoCarrito> ObtenerCarritoDetalladoPorCliente(int idCliente)
         {
-            var lista = new List<CarritoCompra>();
+            var productos = new List<ProductoCarrito>();
+
             using (var dr = SqlHelper.ExecuteReader(
                 cad_cn,
                 CommandType.StoredProcedure,
-                "PA_OBTENER_CARRITO_POR_CLIENTE",
+                "PA_OBTENER_CARRITO_CON_DETALLES",
                 new SqlParameter("@id_cliente", idCliente)))
             {
                 while (dr.Read())
                 {
-                    lista.Add(new CarritoCompra
+                    productos.Add(new ProductoCarrito
                     {
-                        IdCarritoCompra = dr.GetInt32(0),
-                        IdCliente = dr.GetInt32(1),
-                        IdProducto = dr.GetInt32(2),
-                        NombreProducto = dr.GetString(3),
-                        Precio= dr.GetDecimal(4),
-                        Cantidad = dr.GetInt32(5),
-                        ImporteTotal = dr.GetDecimal(6)
+                        IdProducto = dr.GetInt32(dr.GetOrdinal("id_producto")),
+                        NombreProducto = dr.GetString(dr.GetOrdinal("nombre_producto")),
+                        Cantidad = dr.GetInt32(dr.GetOrdinal("cantidad")),
+                        Precio = dr.GetDecimal(dr.GetOrdinal("precio")),
+                        ImporteTotal = dr.GetDecimal(dr.GetOrdinal("importe_total"))
                     });
                 }
             }
-            return lista;
+
+            // Agrupar y eliminar duplicados (por si el procedimiento devuelve productos duplicados)
+            return productos;
         }
 
+
+
+        //forma de pago <--para
+        public CarritoCompra ObtenerCarritoCompletoPorCliente(int idCliente)
+        {
+            var carrito = new CarritoCompra { IdCliente = idCliente };
+            var productos = new List<ProductoCarrito>();
+
+            using (var dr = SqlHelper.ExecuteReader(
+                cad_cn,
+                CommandType.StoredProcedure,
+                "PA_OBTENER_CARRITO_CON_DETALLES",
+                new SqlParameter("@id_cliente", idCliente)))
+            {
+                while (dr.Read())
+                {
+                    Console.WriteLine($"Producto ID: {dr.GetInt32(2)}, Nombre: {dr.GetString(4)}"); // Agregar log
+                    productos.Add(new ProductoCarrito
+                    {
+                        IdProducto = dr.GetInt32(2),
+                        NombreProducto = dr.GetString(4),
+                        Cantidad = dr.GetInt32(3),
+                        Precio = dr.GetDecimal(5),
+                        ImporteTotal = dr.GetDecimal(6)
+                    });
+
+
+                }
+
+
+                // Serializar los productos en el JSON del carrito
+                carrito.ProductosJson = JsonConvert.SerializeObject(productos);
+                carrito.CalcularImporteTotal();
+
+
+            }
+            return carrito;
+        }
+
+
+        public List<ProductoCarrito> ObtenerProductosPorCliente(int idCliente)
+        {
+            var carrito = ObtenerCarritoCompletoPorCliente(idCliente);
+            return carrito?.ObtenerProductos() ?? new List<ProductoCarrito>();
+        }
+
+
+        /// <summary>
         /// Eliminar un artículo del carrito por su ID.
+        /// </summary>
         public void EliminarArticulo(int idCarritoCompra)
         {
             SqlHelper.ExecuteNonQuery(
@@ -67,8 +132,9 @@ namespace PryVidaFarma.DAO
             );
         }
 
-        //
-        // Obtener tipos de pago
+        /// <summary>
+        /// Obtener los tipos de pago disponibles.
+        /// </summary>
         public List<TipoPago> ObtenerTiposPago()
         {
             var lista = new List<TipoPago>();
@@ -91,34 +157,9 @@ namespace PryVidaFarma.DAO
             return lista;
         }
 
-        //
-        public string ConfirmarCompra(int idCarritoCompra, int idCliente, int idProducto, int cantidad, decimal importeTotal, int idTipoPago)
-        {
-            if (idCliente <= 0 || idProducto <= 0 || cantidad <= 0 || importeTotal <= 0 || idTipoPago <= 0)
-                return "Parámetros inválidos para confirmar la compra.";
-
-            try
-            {
-                SqlHelper.ExecuteNonQuery(
-                    cad_cn,
-                    CommandType.StoredProcedure,
-                    "PA_CONFIRMAR_COMPRA",
-                    new SqlParameter("@id_carrito_compra", idCarritoCompra),
-                    new SqlParameter("@id_cliente", idCliente),
-                    new SqlParameter("@id_producto", idProducto),
-                    new SqlParameter("@cantidad", cantidad),
-                    new SqlParameter("@importeTotal", importeTotal),
-                    new SqlParameter("@id_tipo_pago", idTipoPago)
-                );
-
-                return "Compra confirmada exitosamente.";
-            }
-            catch (Exception ex)
-            {
-                return $"Error al confirmar la compra: {ex.Message}";
-            }
-        }
-
+        /// <summary>
+        /// Obtener los detalles de una compra específica.
+        /// </summary>
         public List<DetalleCompra> ObtenerDetallesCompra(int idCarritoCompra)
         {
             var lista = new List<DetalleCompra>();
@@ -133,20 +174,56 @@ namespace PryVidaFarma.DAO
                 {
                     lista.Add(new DetalleCompra
                     {
-                        NombreProducto = dr.GetString(0),
-                        Cantidad = dr.GetInt32(1),
-                        Precio = dr.GetDecimal(2),
-                        ImporteTotal = dr.GetDecimal(3),
-                        TipoPago = dr.GetString(4),
-                        FechaCompra = dr.GetDateTime(5)
+                        NombreProducto = dr["nombre_producto"].ToString(),
+                        Cantidad = Convert.ToInt32(dr["cantidad"]),
+                        Precio = Convert.ToDecimal(dr["precio"]),
+                        ImporteTotal = Convert.ToDecimal(dr["ImporteTotal"]),
+                        TipoPago = dr["TipoPago"].ToString(),
+                        FechaCompra = Convert.ToDateTime(dr["fecha_compra"])
                     });
+
                 }
             }
 
             return lista;
         }
 
-        //17/12/2024
+
+        //
+        //Confirmar comopra
+        public (int idCarritoCompra, string mensaje) ConfirmarCompra(int idCliente, string productosJson, decimal importeTotal, int idTipoPago)
+        {
+            var outputIdParam = new SqlParameter("@id_carrito_compra", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            var mensajeParam = new SqlParameter("@mensaje", SqlDbType.NVarChar, 500)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            SqlHelper.ExecuteNonQuery(
+                cad_cn,
+                CommandType.StoredProcedure,
+                "PA_CONFIRMAR_COMPRA",
+                new SqlParameter("@id_cliente", idCliente),
+                new SqlParameter("@productos_json", productosJson),
+                new SqlParameter("@importeTotal", importeTotal),
+                new SqlParameter("@id_tipo_pago", idTipoPago),
+                outputIdParam,
+                mensajeParam
+            );
+
+            int idCarritoCompra = outputIdParam.Value != DBNull.Value ? (int)outputIdParam.Value : 0;
+            string mensaje = mensajeParam.Value as string ?? "Operación completada sin mensaje.";
+
+            return (idCarritoCompra, mensaje);
+        }
+
+
+        ////
+        ///
         public Productos ObtenerProductoPorId(int idProducto)
         {
             Productos producto = null;

@@ -1,8 +1,15 @@
-﻿@model List<PryVidaFarma.Models.CarritoCompra>
+﻿@using Newtonsoft.Json
+@model PryVidaFarma.Models.CarritoCompra
+
+
+
 
 @{
     ViewData["Title"] = "Ver Carrito";
+    var carrito = JsonConvert.DeserializeObject<List<PryVidaFarma.Models.ProductoCarrito>>(Model.ProductosJson);
 }
+
+
 
 <div class="px-4">
     <div class="mb-3 px-4">
@@ -26,9 +33,9 @@
                 Items del Carrito
             </div>
             <div class="card-body d-flex flex-column px-5">
-                @if (Model != null && Model.Count > 0)
+                @if (carrito != null && carrito.Count > 0)
                 {
-                    @foreach (var item in Model)
+                    @foreach (var item in carrito)
                     {
                         <div class="d-flex justify-content-between mb-2 gap-4">
                             <div>
@@ -64,9 +71,9 @@
                         <h4>Total a Pagar: <br /> <strong>@ViewBag.total.ToString("C")</strong></h4>
                     </div>
 
-                    @if (Model != null && Model.Count > 0)
+                    @if (carrito != null && carrito.Count > 0)
                     {
-                        <a asp-action="SeleccionarTipoPago" asp-route-idCliente="@Model.FirstOrDefault()?.IdCliente" class="w-100 mt-auto">
+                        <a asp-action="SeleccionarTipoPago" asp-route-idCliente="@Model.IdCliente" class="w-100 mt-auto">
                             <img src="~/img/Continuar-pago.svg" alt="Continuar Pago" class="img-fluid" />
                         </a>
                     }
